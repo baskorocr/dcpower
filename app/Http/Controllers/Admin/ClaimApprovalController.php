@@ -10,7 +10,7 @@ class ClaimApprovalController extends Controller
 {
     public function index()
     {
-        $claims = WarrantyClaim::with(['product', 'claimedBy', 'sale'])
+        $claims = WarrantyClaim::with(['product', 'claimedBy'])
             ->whereIn('status', ['pending', 'under_review'])
             ->latest()
             ->paginate(20);
@@ -20,7 +20,7 @@ class ClaimApprovalController extends Controller
 
     public function show(WarrantyClaim $claim)
     {
-        $claim->load(['product', 'claimedBy', 'sale', 'histories']);
+        $claim->load(['product', 'claimedBy', 'histories']);
         return view('admin.claim-approvals.show', compact('claim'));
     }
 
@@ -38,9 +38,10 @@ class ClaimApprovalController extends Controller
         ]);
 
         $claim->histories()->create([
-            'user_id' => auth()->id(),
-            'action' => 'approved',
+            'actor_user_id' => auth()->id(),
+            'new_status' => 'approved',
             'notes' => $request->resolution_notes,
+            'acted_at' => now(),
         ]);
 
         return redirect()->route('claim-approvals.index')->with('success', 'Claim approved successfully');
@@ -59,10 +60,16 @@ class ClaimApprovalController extends Controller
             'resolution_notes' => $request->resolution_notes,
         ]);
 
+        // Update product status to claim_rejected
+        $claim->product->update([
+            'status' => 'claim_rejected'
+        ]);
+
         $claim->histories()->create([
-            'user_id' => auth()->id(),
-            'action' => 'rejected',
+            'actor_user_id' => auth()->id(),
+            'new_status' => 'rejected',
             'notes' => $request->resolution_notes,
+            'acted_at' => now(),
         ]);
 
         return redirect()->route('claim-approvals.index')->with('success', 'Claim rejected');

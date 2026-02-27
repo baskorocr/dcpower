@@ -12,26 +12,36 @@
         <!-- Packing Info -->
         <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl">
             <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Packing Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Packing Code</p>
-                    <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ $standardPacking->packing_code }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Packing Code</p>
+                        <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ $standardPacking->packing_code }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Project</p>
+                        <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->project->name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Quantity</p>
+                        <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->quantity }} units</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Created By</p>
+                        <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->creator->name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Packed At</p>
+                        <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->packed_at->format('d M Y H:i') }}</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Project</p>
-                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->project->name }}</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Quantity</p>
-                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->quantity }} units</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Created By</p>
-                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->creator->name }}</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Packed At</p>
-                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ $standardPacking->packed_at->format('d M Y H:i') }}</p>
+                <div class="flex justify-center items-center">
+                    <div class="text-center">
+                        <div class="bg-white p-6 rounded-lg inline-block border-2 border-gray-200">
+                            {!! QrCode::size(250)->generate($standardPacking->packing_code) !!}
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 font-mono">{{ $standardPacking->packing_code }}</p>
+                    </div>
                 </div>
             </div>
         </div>

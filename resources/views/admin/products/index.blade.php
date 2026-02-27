@@ -2,11 +2,11 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Products</h2>
-            @can('manage-products')
+            @if(!auth()->user()->hasRole(['distributor', 'buyer']))
             <a href="{{ route('products.create') }}" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:scale-105 transition-transform">
                 + New Product
             </a>
-            @endcan
+            @endif
         </div>
     </x-slot>
 
@@ -27,8 +27,9 @@
                 <select name="status" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-1 dark:text-gray-200">
                     <option value="">All Status</option>
                     <option value="manufactured" {{ request('status') == 'manufactured' ? 'selected' : '' }}>Manufactured</option>
-                    <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
                     <option value="in_distributor" {{ request('status') == 'in_distributor' ? 'selected' : '' }}>In Distributor</option>
+                    <option value="retail" {{ request('status') == 'retail' ? 'selected' : '' }}>Retail</option>
+                    <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
                 </select>
             </div>
             
@@ -104,7 +105,7 @@
                                 <a href="{{ route('products.show', $product) }}" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
                                     View
                                 </a>
-                                @can('manage-products')
+                                @if(!auth()->user()->hasRole(['distributor', 'buyer']))
                                 <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?')">
                                     @csrf
                                     @method('DELETE')
@@ -112,7 +113,7 @@
                                         Delete
                                     </button>
                                 </form>
-                                @endcan
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -132,14 +133,17 @@
                     <span id="selected-count">0</span> item(s) selected
                 </span>
                 <div class="flex gap-2">
+                    <button onclick="printSelected()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium">
+                        Print Product Labels
+                    </button>
                     <button onclick="printSelectedPackings()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
                         Print Packing Labels
                     </button>
-                    @can('manage-products')
+                    @if(!auth()->user()->hasRole(['distributor', 'buyer']))
                     <button onclick="deleteSelected()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">
                         Delete Selected
                     </button>
-                    @endcan
+                    @endif
                 </div>
             </div>
         </div>
@@ -173,6 +177,18 @@
             } else {
                 bulkActions.classList.add('hidden');
             }
+        }
+
+        function printSelected() {
+            const checked = document.querySelectorAll('.product-checkbox:checked');
+            const productIds = Array.from(checked).map(cb => cb.value);
+            
+            if (productIds.length === 0) {
+                alert('No products selected');
+                return;
+            }
+
+            window.open(`/products/print?ids=${productIds.join(',')}`, '_blank');
         }
 
         function printSelectedPackings() {

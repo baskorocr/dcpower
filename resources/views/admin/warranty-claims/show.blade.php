@@ -28,13 +28,75 @@
                     <p class="font-semibold">{{ ucfirst($warrantyClaim->complaint_type) }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Product</p>
-                    <p class="font-semibold">{{ $warrantyClaim->product->name }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Product Serial Number</p>
+                    <p class="font-semibold">{{ $warrantyClaim->product->serial_number }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Invoice</p>
-                    <p class="font-semibold">{{ $warrantyClaim->sale->invoice_no }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Product Name</p>
+                    <p class="font-semibold">{{ $warrantyClaim->product->project->name ?? 'N/A' }}</p>
                 </div>
+                @php
+                    $latestRetailMovement = $warrantyClaim->product->stockMovements
+                        ->where('retail_id', '!=', null)
+                        ->sortByDesc('moved_at')
+                        ->first();
+                    
+                    // Fallback ke trace log jika tidak ada di stock movements
+                    $retailName = null;
+                    if ($latestRetailMovement && $latestRetailMovement->retail) {
+                        $retailName = $latestRetailMovement->retail->name;
+                    } else {
+                        $retailTrace = $warrantyClaim->product->traceLogs
+                            ->where('event_type', 'stock_out_retail')
+                            ->sortByDesc('scanned_at')
+                            ->first();
+                        if ($retailTrace) {
+                            $retailName = $retailTrace->location;
+                        }
+                    }
+                @endphp
+                @if($retailName)
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Retail</p>
+                    <p class="font-semibold">{{ $retailName }}</p>
+                </div>
+                @endif
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Nomor WhatsApp</p>
+                    <p class="font-semibold">{{ $warrantyClaim->whatsapp_number }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Pembelian</p>
+                    <p class="font-semibold">{{ ucfirst($warrantyClaim->purchase_type) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Tanggal Pembelian</p>
+                    <p class="font-semibold">{{ $warrantyClaim->purchase_date?->format('d/m/Y') }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Tanggal Baterai Bermasalah</p>
+                    <p class="font-semibold">{{ $warrantyClaim->battery_issue_date?->format('d/m/Y') }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Tipe Motor</p>
+                    <p class="font-semibold">{{ $warrantyClaim->motor_type }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Pernah Modifikasi?</p>
+                    <p class="font-semibold">{{ $warrantyClaim->has_modification ? 'Ya' : 'Tidak' }}</p>
+                </div>
+                @if($warrantyClaim->has_modification && $warrantyClaim->modification_types)
+                <div class="col-span-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Jenis Modifikasi</p>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        @foreach($warrantyClaim->modification_types as $mod)
+                        <span class="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-full">
+                            {{ ucfirst(str_replace('_', ' ', $mod)) }}
+                        </span>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Submitted</p>
                     <p class="font-semibold">{{ $warrantyClaim->submitted_at->format('d M Y H:i') }}</p>
@@ -50,12 +112,108 @@
                 <p class="p-3 bg-gray-50 dark:bg-dark-eval-2 rounded-lg">{{ $warrantyClaim->complaint_description }}</p>
             </div>
 
+            @if($warrantyClaim->photo_evidence)
+            <div class="mb-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Photo Evidence</p>
+                <img src="{{ asset('storage/' . $warrantyClaim->photo_evidence) }}" alt="Evidence" class="max-w-md rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition" onclick="openImageModal(this.src)">
+            </div>
+            @endif
+
+            <!-- Image Modal -->
+            <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
+                <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
+                    <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 text-xl">
+                        ✕
+                    </button>
+                    <img id="modalImage" src="" alt="Evidence" class="max-w-full max-h-screen rounded-lg">
+                </div>
+            </div>
+
+            <script>
+                function openImageModal(src) {
+                    document.getElementById('modalImage').src = src;
+                    document.getElementById('imageModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                function closeImageModal() {
+                    document.getElementById('imageModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+            </script>
+
             @if($warrantyClaim->resolution_notes)
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Resolution Notes</p>
                 <p class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">{{ $warrantyClaim->resolution_notes }}</p>
             </div>
             @endif
+        </div>
+
+        <!-- Product Trace -->
+        <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl border-2 border-emerald-100 dark:border-emerald-800">
+            <h3 class="text-lg font-bold mb-4">Product Trace</h3>
+            <div class="space-y-3">
+                <!-- Manufacture -->
+                <div class="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg">
+                    <div class="w-2 h-2 mt-2 bg-blue-500 rounded-full"></div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">Manufacture</p>
+                        <p class="text-xs text-gray-500">{{ $warrantyClaim->product->project->name ?? 'N/A' }}</p>
+                        <p class="text-xs text-gray-400">{{ $warrantyClaim->product->manufactured_at?->format('d M Y H:i') ?? 'N/A' }}</p>
+                    </div>
+                </div>
+
+                <!-- Distributor -->
+                @php
+                    $distributorMovement = $warrantyClaim->product->stockMovements
+                        ->where('type', 'in')
+                        ->where('distributor_id', '!=', null)
+                        ->sortBy('moved_at')
+                        ->first();
+                @endphp
+                @if($distributorMovement && $distributorMovement->distributor)
+                <div class="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-lg">
+                    <div class="w-2 h-2 mt-2 bg-purple-500 rounded-full"></div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">Distributor</p>
+                        <p class="text-xs text-gray-500">{{ $distributorMovement->distributor->name }}</p>
+                        <p class="text-xs text-gray-400">{{ $distributorMovement->moved_at->format('d M Y H:i') }}</p>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Retail -->
+                @php
+                    $retailMovement = $warrantyClaim->product->stockMovements
+                        ->where('retail_id', '!=', null)
+                        ->sortByDesc('moved_at')
+                        ->first();
+                    
+                    // Fallback ke trace log
+                    $retailTrace = null;
+                    if (!$retailMovement || !$retailMovement->retail) {
+                        $retailTrace = $warrantyClaim->product->traceLogs
+                            ->where('event_type', 'stock_out_retail')
+                            ->sortByDesc('scanned_at')
+                            ->first();
+                    }
+                @endphp
+                @if(($retailMovement && $retailMovement->retail) || $retailTrace)
+                <div class="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg">
+                    <div class="w-2 h-2 mt-2 bg-emerald-500 rounded-full"></div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-sm">Retail</p>
+                        <p class="text-xs text-gray-500">
+                            {{ $retailMovement && $retailMovement->retail ? $retailMovement->retail->name : ($retailTrace ? $retailTrace->location : 'N/A') }}
+                        </p>
+                        <p class="text-xs text-gray-400">
+                            {{ $retailMovement ? $retailMovement->moved_at->format('d M Y H:i') : ($retailTrace ? $retailTrace->scanned_at->format('d M Y H:i') : 'N/A') }}
+                        </p>
+                    </div>
+                </div>
+                @endif
+            </div>
         </div>
 
         <!-- Update Status (for managers) -->

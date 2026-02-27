@@ -10,7 +10,7 @@ class Product extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['project_id', 'standard_packing_id', 'created_by', 'serial_number', 'image_path', 'status', 'manufactured_at', 'warranty_expires_at'];
+    protected $fillable = ['project_id', 'standard_packing_id', 'created_by', 'serial_number', 'image_path', 'status', 'manufactured_at', 'warranty_expires_at', 'at_distributor', 'retail_stock'];
     protected $casts = ['manufactured_at' => 'datetime', 'warranty_expires_at' => 'datetime'];
 
     protected static function boot()
@@ -50,7 +50,7 @@ class Product extends Model
 
     public function sale()
     {
-        return $this->hasOne(Sale::class);
+        return null; // Sales feature removed
     }
 
     public function warrantyClaims()

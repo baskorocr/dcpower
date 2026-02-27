@@ -16,7 +16,20 @@ class ProductController extends Controller
         $query = Product::with(['project', 'creator', 'standardPacking']);
         
         // Get user's projects
-        if (!auth()->user()->hasRole('admin')) {
+        if (auth()->user()->hasRole('distributor')) {
+            // Distributor only sees products in their stock
+            $distributor = \App\Models\Distributor::where('user_id', auth()->id())->first();
+            if ($distributor) {
+                $productIds = \DB::table('stock_movements')
+                    ->where('distributor_id', $distributor->id)
+                    ->pluck('product_id');
+                $query->whereIn('id', $productIds);
+                $projects = Project::where('id', $distributor->project_id)->get();
+            } else {
+                $query->whereRaw('1 = 0'); // No products
+                $projects = collect([]);
+            }
+        } elseif (!auth()->user()->hasRole('admin')) {
             $projectIds = auth()->user()->projects->pluck('id');
             $query->whereIn('project_id', $projectIds);
             $projects = auth()->user()->projects;
@@ -31,7 +44,11 @@ class ProductController extends Controller
         
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status == 'retail') {
+                $query->where('retail_stock', '>', 0);
+            } else {
+                $query->where('status', $request->status);
+            }
         }
         
         // Filter by project
@@ -212,7 +229,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load(['traceLogs.user', 'sale', 'warrantyClaims', 'standardPacking']);
+        $product->load(['traceLogs.user', 'warrantyClaims', 'standardPacking']);
         return view('admin.products.show', compact('product'));
     }
 
@@ -232,5 +249,13 @@ class ProductController extends Controller
         Product::whereIn('id', $request->product_ids)->delete();
         
         return redirect()->route('products.index')->with('success', count($request->product_ids) . ' product(s) deleted successfully');
+    }
+
+    public function print(Request $request)
+    {
+        $ids = explode(',', $request->ids);
+        $products = Product::with('project')->whereIn('id', $ids)->get();
+        
+        return view('admin.products.print', compact('products'));
     }
 }

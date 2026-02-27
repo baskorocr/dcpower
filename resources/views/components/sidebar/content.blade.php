@@ -46,6 +46,16 @@
     </x-sidebar.link>
     @endcan
 
+    @can('manage-retails')
+    <x-sidebar.link title="Retails" href="{{ route('retails.index') }}" :isActive="request()->routeIs('retails.*')">
+        <x-slot name="icon">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+        </x-slot>
+    </x-sidebar.link>
+    @endcan
+
     @can('manage-products')
     <x-sidebar.link title="Products" href="{{ route('products.index') }}" :isActive="request()->routeIs('products.*')">
         <x-slot name="icon">
@@ -76,17 +86,7 @@
     </x-sidebar.link>
     @endcan
 
-    @canany(['view-sales', 'manage-sales'])
-    <x-sidebar.link title="Sales" href="{{ route('sales.index') }}" :isActive="request()->routeIs('sales.*')">
-        <x-slot name="icon">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-        </x-slot>
-    </x-sidebar.link>
-    @endcanany
-
-    @canany(['view-claims', 'manage-claims', 'submit-claims'])
+    @canany(['view-claims', 'manage-claims'])
     <x-sidebar.link title="Warranty Claims" href="{{ route('warranty-claims.index') }}" :isActive="request()->routeIs('warranty-claims.*')">
         <x-slot name="icon">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,6 +101,16 @@
         <x-slot name="icon">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+        </x-slot>
+    </x-sidebar.link>
+    @endcan
+
+    @can('view-claim-history')
+    <x-sidebar.link title="Claim History" href="{{ route('claim-history.index') }}" :isActive="request()->routeIs('claim-history.*')">
+        <x-slot name="icon">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
         </x-slot>
     </x-sidebar.link>

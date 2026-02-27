@@ -29,6 +29,7 @@ class RolePermissionSeeder extends Seeder
             'submit-claims',
             'approve-claims',
             'manage-roles',
+            'process-replacements',
         ];
 
         foreach ($permissions as $permission) {
@@ -55,7 +56,7 @@ class RolePermissionSeeder extends Seeder
         $qa->syncPermissions(['manage-products', 'scan-qr', 'stock-out']);
 
         $distributor = Role::firstOrCreate(['name' => 'distributor']);
-        $distributor->syncPermissions(['view-sales', 'manage-sales', 'manage-stock']);
+        $distributor->syncPermissions(['view-sales', 'manage-sales', 'manage-stock', 'process-replacements']);
 
         $buyer = Role::firstOrCreate(['name' => 'buyer']);
         $buyer->syncPermissions(['view-sales', 'submit-claims', 'view-claims']);

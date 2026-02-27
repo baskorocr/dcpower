@@ -47,19 +47,49 @@
                 <div class="flex items-center">
                     <span class="text-2xl font-bold text-emerald-600">DC Connect</span>
                 </div>
+                
+                <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-8">
                     <a href="#home" class="text-gray-700 hover:text-emerald-600 transition">Home</a>
                     <a href="#products" class="text-gray-700 hover:text-emerald-600 transition">Products</a>
                     <a href="#testimonials" class="text-gray-700 hover:text-emerald-600 transition">Testimonials</a>
                     <a href="#about" class="text-gray-700 hover:text-emerald-600 transition">About</a>
                     <a href="#contact" class="text-gray-700 hover:text-emerald-600 transition">Contact</a>
+                    <a href="{{ route('warranty.menu') }}" class="text-emerald-600 hover:text-emerald-700 font-semibold transition">Garansi</a>
                 </div>
-                <div class="flex items-center space-x-4">
+                
+                <!-- Desktop Auth Buttons -->
+                <div class="hidden md:flex items-center space-x-4">
                     @auth
                         <a href="{{ url('/dashboard') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Dashboard</a>
                     @else
                         <a href="{{ route('login') }}" class="text-gray-700 hover:text-emerald-600 transition">Login</a>
                         <a href="{{ route('register') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Register</a>
+                    @endauth
+                </div>
+
+                <!-- Mobile Hamburger Button -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-700 hover:text-emerald-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-3">
+                    <a href="#home" class="text-gray-700 hover:text-emerald-600 transition py-2">Home</a>
+                    <a href="#products" class="text-gray-700 hover:text-emerald-600 transition py-2">Products</a>
+                    <a href="#testimonials" class="text-gray-700 hover:text-emerald-600 transition py-2">Testimonials</a>
+                    <a href="#about" class="text-gray-700 hover:text-emerald-600 transition py-2">About</a>
+                    <a href="#contact" class="text-gray-700 hover:text-emerald-600 transition py-2">Contact</a>
+                    <a href="{{ route('warranty.menu') }}" class="text-emerald-600 hover:text-emerald-700 font-semibold transition py-2">Garansi</a>
+                    @auth
+                        <a href="{{ url('/dashboard') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-center">Dashboard</a>
+                    @else
+                        <a href="{{ route('login') }}" class="text-gray-700 hover:text-emerald-600 transition py-2">Login</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-center">Register</a>
                     @endauth
                 </div>
             </div>
@@ -340,32 +370,41 @@
 
     <!-- Contact Section -->
     <section id="contact" class="py-20 bg-gray-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Get In Touch</h2>
                 <p class="text-xl text-gray-600">Have questions? We'd love to hear from you.</p>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <form class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                            <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Contact Form -->
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                            <textarea rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent"></textarea>
                         </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                        <textarea rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent"></textarea>
-                    </div>
-                    <button type="submit" class="w-full px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-lg font-semibold transition transform hover:scale-105">
-                        Send Message
-                    </button>
-                </form>
+                        <button type="submit" class="w-full px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-lg font-semibold transition transform hover:scale-105">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Retail Map -->
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Our Retail Locations</h3>
+                    <div id="retailMap" style="height: 450px; width: 100%;" class="rounded-lg"></div>
+                </div>
             </div>
         </div>
     </section>
@@ -403,6 +442,19 @@
     </footer>
 
     <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking menu items
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobileMenu').classList.add('hidden');
+            });
+        });
+
         // Auto unmute after load
         window.addEventListener('load', function() {
             const video = document.getElementById('bgVideo');
@@ -452,6 +504,29 @@
         }, observerOptions);
 
         document.querySelectorAll('section > div').forEach(el => observer.observe(el));
+    </script>
+
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const retailMap = L.map('retailMap').setView([-2.5489, 118.0149], 5);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(retailMap);
+
+        fetch('/api/retails/locations')
+            .then(response => response.json())
+            .then(retails => {
+                retails.forEach(retail => {
+                    if (retail.latitude && retail.longitude) {
+                        L.marker([retail.latitude, retail.longitude])
+                            .bindPopup(`<b>${retail.name}</b><br>${retail.city || ''}, ${retail.province || ''}`)
+                            .addTo(retailMap);
+                    }
+                });
+            });
     </script>
 </body>
 </html>

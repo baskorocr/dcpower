@@ -7,8 +7,45 @@ use Illuminate\Support\Str;
 
 class WarrantyClaim extends Model
 {
-    protected $fillable = ['product_id', 'sale_id', 'claimed_by_user_id', 'distributor_id', 'handled_by', 'approved_by', 'claim_number', 'status', 'complaint_type', 'complaint_description', 'photo_evidence', 'defect_notes', 'resolution_notes', 'submitted_at', 'reviewed_at', 'approved_at', 'resolved_at'];
-    protected $casts = ['submitted_at' => 'datetime', 'reviewed_at' => 'datetime', 'approved_at' => 'datetime', 'resolved_at' => 'datetime'];
+    protected $fillable = [
+        'product_id', 
+        'claimed_by_user_id', 
+        'distributor_id', 
+        'handled_by', 
+        'approved_by', 
+        'claim_number', 
+        'status', 
+        'complaint_type', 
+        'complaint_description', 
+        'photo_evidence', 
+        'defect_notes', 
+        'resolution_notes', 
+        'submitted_at', 
+        'reviewed_at', 
+        'approved_at', 
+        'resolved_at',
+        'replaced_at',
+        'replacement_product_id',
+        'motor_type',
+        'has_modification',
+        'modification_types',
+        'whatsapp_number',
+        'purchase_type',
+        'purchase_date',
+        'battery_issue_date'
+    ];
+    
+    protected $casts = [
+        'submitted_at' => 'datetime', 
+        'reviewed_at' => 'datetime', 
+        'approved_at' => 'datetime', 
+        'resolved_at' => 'datetime',
+        'replaced_at' => 'datetime',
+        'has_modification' => 'boolean',
+        'modification_types' => 'array',
+        'purchase_date' => 'date',
+        'battery_issue_date' => 'date'
+    ];
 
     protected static function boot()
     {
@@ -25,9 +62,9 @@ class WarrantyClaim extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function sale()
+    public function replacementProduct()
     {
-        return $this->belongsTo(Sale::class);
+        return $this->belongsTo(Product::class, 'replacement_product_id');
     }
 
     public function claimedBy()

@@ -11,14 +11,12 @@ class WarrantyClaimController extends Controller
 {
     public function index()
     {
-        $query = WarrantyClaim::with(['product', 'sale', 'claimedBy']);
+        $query = WarrantyClaim::with(['product', 'claimedBy']);
         
         if (auth()->user()->hasRole('buyer')) {
             $query->where('claimed_by_user_id', auth()->id());
         } elseif (auth()->user()->hasRole('distributor')) {
-            $query->whereHas('sale', function($q) {
-                $q->where('distributor_id', auth()->user()->distributor->id);
-            });
+            $query->where('distributor_id', auth()->user()->distributor->id);
         }
         
         $claims = $query->latest()->paginate(15);
@@ -31,6 +29,69 @@ class WarrantyClaimController extends Controller
         return view('admin.warranty-claims.create');
     }
 
+    public function checkSerial(Request $request)
+    {
+        $serialNumber = $request->input('serial_number');
+        
+        $product = \App\Models\Product::where('serial_number', $serialNumber)->first();
+        
+        if (!$product) {
+            return response()->json([
+                'status' => 'unknown',
+                'message' => 'Product Unknown - Serial number tidak ditemukan di database',
+                'valid' => false
+            ]);
+        }
+
+        if ($product->status === 'warranty_expired') {
+            return response()->json([
+                'status' => 'expired',
+                'message' => 'Product Warranty Expired - Garansi produk sudah habis',
+                'valid' => false,
+                'product_status' => 'warranty_expired'
+            ]);
+        }
+
+        if ($product->status === 'product_claim') {
+            return response()->json([
+                'status' => 'claimed',
+                'message' => 'Product Already Claimed - Produk sudah digunakan untuk penggantian klaim',
+                'valid' => false,
+                'product_status' => 'product_claim'
+            ]);
+        }
+
+        if ($product->status === 'claim_rejected') {
+            return response()->json([
+                'status' => 'rejected',
+                'message' => 'Claim Rejected - Klaim produk ini sudah ditolak sebelumnya',
+                'valid' => false,
+                'product_status' => 'claim_rejected'
+            ]);
+        }
+        
+        if (!$product->warranty_expires_at) {
+            return response()->json([
+                'status' => 'not_activated',
+                'message' => 'Product Not Activated - Warranty belum diaktivasi',
+                'valid' => false,
+                'product_status' => $product->status
+            ]);
+        }
+        
+        return response()->json([
+            'status' => 'genuine',
+            'message' => 'Product Original Genuine - Produk asli dan terverifikasi',
+            'valid' => true,
+            'product_status' => $product->status,
+            'product' => [
+                'name' => $product->project->name ?? 'N/A',
+                'activated_at' => $product->warranty_activated_at?->format('d/m/Y'),
+                'expires_at' => $product->warranty_expires_at?->format('d/m/Y')
+            ]
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -38,19 +99,25 @@ class WarrantyClaimController extends Controller
             'complaint_type' => 'required|in:defect,damage,malfunction,other',
             'complaint_description' => 'required|string',
             'photo_evidence' => 'required|image|mimes:jpeg,jpg,png|max:5120|dimensions:min_width=400,min_height=400',
+            'motor_type' => 'required|string|max:255',
+            'has_modification' => 'required|boolean',
+            'modification_types' => 'nullable|array',
+            'modification_types.*' => 'in:boreup,ganti_kiprok,ganti_spull,ganti_coil',
+            'whatsapp_number' => 'required|string|max:20',
+            'purchase_type' => 'required|in:online,offline',
+            'purchase_date' => 'required|date|before_or_equal:today',
+            'battery_issue_date' => 'required|date|after_or_equal:purchase_date|before_or_equal:today',
         ]);
 
-        // Find sale by serial number
-        $sale = Sale::whereHas('product', function($q) use ($validated) {
-            $q->where('serial_number', $validated['serial_number']);
-        })
-        ->where('buyer_user_id', auth()->id())
-        ->whereDate('warranty_end', '>=', now())
-        ->with('product')
-        ->first();
+        // Find product by serial number
+        $product = \App\Models\Product::where('serial_number', $validated['serial_number'])
+            ->whereNotNull('warranty_expires_at')
+            ->whereDate('warranty_expires_at', '>=', now())
+            ->whereNotIn('status', ['warranty_expired', 'product_claim', 'claim_rejected'])
+            ->first();
 
-        if (!$sale) {
-            return back()->withErrors(['serial_number' => 'Serial number not found or warranty has expired.'])->withInput();
+        if (!$product) {
+            return back()->withErrors(['serial_number' => 'Serial number not found, warranty has expired, product already used for claim replacement, or claim was rejected.'])->withInput();
         }
 
         // Upload photo with strict validation
@@ -72,15 +139,20 @@ class WarrantyClaimController extends Controller
         }
 
         $claim = WarrantyClaim::create([
-            'sale_id' => $sale->id,
+            'product_id' => $product->id,
             'complaint_type' => $validated['complaint_type'],
             'complaint_description' => $validated['complaint_description'],
-            'product_id' => $sale->product_id,
             'claimed_by_user_id' => auth()->id(),
-            'distributor_id' => $sale->distributor_id,
             'photo_evidence' => $photoPath ?? null,
             'status' => 'pending',
             'submitted_at' => now(),
+            'motor_type' => $validated['motor_type'],
+            'has_modification' => $validated['has_modification'],
+            'modification_types' => $validated['has_modification'] ? $validated['modification_types'] : null,
+            'whatsapp_number' => $validated['whatsapp_number'],
+            'purchase_type' => $validated['purchase_type'],
+            'purchase_date' => $validated['purchase_date'],
+            'battery_issue_date' => $validated['battery_issue_date'],
         ]);
 
         // Log history
@@ -96,7 +168,12 @@ class WarrantyClaimController extends Controller
 
     public function show(WarrantyClaim $warrantyClaim)
     {
-        $warrantyClaim->load(['product', 'sale', 'histories.actor']);
+        $warrantyClaim->load([
+            'product.stockMovements.distributor',
+            'product.stockMovements.retail',
+            'product.traceLogs',
+            'histories.actor'
+        ]);
         return view('admin.warranty-claims.show', compact('warrantyClaim'));
     }
 

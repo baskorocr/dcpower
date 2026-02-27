@@ -21,6 +21,12 @@
                     </div>
                     @error('serial_number')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     
+                    <!-- Validation Status -->
+                    <div id="serial-status" class="mt-2 hidden">
+                        <div id="status-message" class="p-3 rounded-lg text-sm font-medium"></div>
+                        <div id="product-info" class="mt-2 text-xs text-gray-600 dark:text-gray-400"></div>
+                    </div>
+                    
                     <!-- Scanner Container -->
                     <div id="scanner-container" class="hidden mt-4">
                         <div id="reader" class="border-2 border-emerald-200 rounded-lg overflow-hidden"></div>
@@ -28,6 +34,34 @@
                             Stop Scanner
                         </button>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nomor WhatsApp *</label>
+                    <input type="text" name="whatsapp_number" value="{{ old('whatsapp_number') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: 08123456789">
+                    @error('whatsapp_number')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pembelian *</label>
+                    <select name="purchase_type" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                        <option value="">Pilih jenis pembelian</option>
+                        <option value="online" {{ old('purchase_type') == 'online' ? 'selected' : '' }}>Online</option>
+                        <option value="offline" {{ old('purchase_type') == 'offline' ? 'selected' : '' }}>Offline</option>
+                    </select>
+                    @error('purchase_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Pembelian *</label>
+                    <input type="date" name="purchase_date" value="{{ old('purchase_date') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                    @error('purchase_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Baterai Bermasalah *</label>
+                    <input type="date" name="battery_issue_date" value="{{ old('battery_issue_date') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                    @error('battery_issue_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
@@ -46,6 +80,50 @@
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description *</label>
                     <textarea name="complaint_description" rows="4" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Describe the issue in detail...">{{ old('complaint_description') }}</textarea>
                     @error('complaint_description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tipe Motor *</label>
+                    <input type="text" name="motor_type" value="{{ old('motor_type') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: Honda Beat, Yamaha Mio, dll">
+                    @error('motor_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Apakah Pernah Modifikasi? *</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="has_modification" value="0" {{ old('has_modification', '0') == '0' ? 'checked' : '' }} onchange="toggleModifications()" class="mr-2">
+                            <span>Tidak</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="has_modification" value="1" {{ old('has_modification') == '1' ? 'checked' : '' }} onchange="toggleModifications()" class="mr-2">
+                            <span>Ya</span>
+                        </label>
+                    </div>
+                    @error('has_modification')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div id="modification-types" class="hidden">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Jenis Modifikasi</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="modification_types[]" value="boreup" {{ in_array('boreup', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <span>Boreup</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="modification_types[]" value="ganti_kiprok" {{ in_array('ganti_kiprok', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <span>Ganti Kiprok</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="modification_types[]" value="ganti_spull" {{ in_array('ganti_spull', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <span>Ganti Spull</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="modification_types[]" value="ganti_coil" {{ in_array('ganti_coil', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <span>Ganti Coil</span>
+                        </label>
+                    </div>
+                    @error('modification_types')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
@@ -69,6 +147,105 @@
             <script src="https://unpkg.com/html5-qrcode"></script>
             <script>
                 let html5QrCode;
+                let isSerialValid = false;
+                
+                function toggleModifications() {
+                    const hasModification = document.querySelector('input[name="has_modification"]:checked').value;
+                    const modificationTypes = document.getElementById('modification-types');
+                    
+                    if (hasModification === '1') {
+                        modificationTypes.classList.remove('hidden');
+                    } else {
+                        modificationTypes.classList.add('hidden');
+                        document.querySelectorAll('input[name="modification_types[]"]').forEach(cb => cb.checked = false);
+                    }
+                }
+                
+                function checkSerialNumber(serialNumber) {
+                    if (!serialNumber) {
+                        document.getElementById('serial-status').classList.add('hidden');
+                        return;
+                    }
+                    
+                    fetch('{{ route("warranty-claims.check-serial") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ serial_number: serialNumber })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const statusDiv = document.getElementById('serial-status');
+                        const messageDiv = document.getElementById('status-message');
+                        const infoDiv = document.getElementById('product-info');
+                        
+                        statusDiv.classList.remove('hidden');
+                        isSerialValid = data.valid;
+                        
+                        if (data.status === 'unknown') {
+                            messageDiv.className = 'p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800 border-2 border-red-300';
+                            messageDiv.textContent = '❌ ' + data.message;
+                            infoDiv.innerHTML = '';
+                        } else if (data.status === 'expired') {
+                            messageDiv.className = 'p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800 border-2 border-red-300';
+                            messageDiv.textContent = '❌ ' + data.message;
+                            infoDiv.innerHTML = '<span class="font-semibold">Status: </span>' + data.product_status;
+                        } else if (data.status === 'claimed') {
+                            messageDiv.className = 'p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800 border-2 border-red-300';
+                            messageDiv.textContent = '❌ ' + data.message;
+                            infoDiv.innerHTML = '<span class="font-semibold">Status: </span>' + data.product_status;
+                        } else if (data.status === 'rejected') {
+                            messageDiv.className = 'p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800 border-2 border-red-300';
+                            messageDiv.textContent = '❌ ' + data.message;
+                            infoDiv.innerHTML = '<span class="font-semibold">Status: </span>' + data.product_status;
+                        } else if (data.status === 'not_activated') {
+                            messageDiv.className = 'p-3 rounded-lg text-sm font-medium bg-yellow-100 text-yellow-800 border-2 border-yellow-300';
+                            messageDiv.textContent = '⚠️ ' + data.message;
+                            infoDiv.innerHTML = '<span class="font-semibold">Status: </span>' + data.product_status;
+                        } else if (data.status === 'genuine') {
+                            messageDiv.className = 'p-3 rounded-lg text-sm font-medium bg-green-100 text-green-800 border-2 border-green-300';
+                            messageDiv.textContent = '✅ ' + data.message;
+                            infoDiv.innerHTML = '<span class="font-semibold">Status: </span>' + data.product_status + '<br>' +
+                                '<span class="font-semibold">Product: </span>' + data.product.name + '<br>' +
+                                '<span class="font-semibold">Activated: </span>' + data.product.activated_at + '<br>' +
+                                '<span class="font-semibold">Expires: </span>' + data.product.expires_at;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+                
+                document.getElementById('serial_number').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        checkSerialNumber(this.value);
+                    }
+                });
+                
+                document.getElementById('serial_number').addEventListener('blur', function() {
+                    checkSerialNumber(this.value);
+                });
+                
+                document.querySelector('form').addEventListener('submit', function(e) {
+                    const serialNumber = document.getElementById('serial_number').value;
+                    if (!serialNumber) {
+                        e.preventDefault();
+                        alert('Serial number harus diisi.');
+                        return false;
+                    }
+                    if (!isSerialValid) {
+                        e.preventDefault();
+                        alert('Serial number tidak valid. Pastikan produk asli, warranty sudah diaktivasi, dan tidak berstatus warranty_expired, product_claim, atau claim_rejected.');
+                        return false;
+                    }
+                });
+                
+                document.addEventListener('DOMContentLoaded', function() {
+                    toggleModifications();
+                });
                 
                 function startScanner() {
                     document.getElementById('scanner-container').classList.remove('hidden');
@@ -79,6 +256,7 @@
                         { fps: 10, qrbox: 250 },
                         (decodedText) => {
                             document.getElementById('serial_number').value = decodedText;
+                            checkSerialNumber(decodedText);
                             stopScanner();
                         }
                     ).catch(err => {

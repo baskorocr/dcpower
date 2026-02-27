@@ -45,6 +45,8 @@ class DistributorController extends Controller
             'address' => 'nullable|string',
             'city' => 'nullable|string',
             'province' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         if (!auth()->user()->hasRole('admin')) {
@@ -77,6 +79,8 @@ class DistributorController extends Controller
             'address' => $validated['address'],
             'city' => $validated['city'],
             'province' => $validated['province'],
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
             'status' => 'active',
         ]);
 
@@ -105,34 +109,40 @@ class DistributorController extends Controller
 
     public function update(Request $request, Distributor $distributor)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string',
-            'province' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
-        ]);
+        try {
+            $validated = $request->validate([
+                'project_id' => 'required|exists:projects,id',
+                'name' => 'required|string|max:255',
+                'phone' => 'nullable|string',
+                'address' => 'nullable|string',
+                'city' => 'nullable|string',
+                'province' => 'nullable|string',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
+                'status' => 'required|in:active,inactive',
+            ]);
 
-        if (!auth()->user()->hasRole('admin')) {
-            $allowedProjectIds = \DB::table('project_users')
-                ->where('user_id', auth()->id())
-                ->pluck('project_id')
-                ->toArray();
-            
-            if (!in_array($validated['project_id'], $allowedProjectIds)) {
-                abort(403, 'Unauthorized project access');
+            if (!auth()->user()->hasRole('admin')) {
+                $allowedProjectIds = \DB::table('project_users')
+                    ->where('user_id', auth()->id())
+                    ->pluck('project_id')
+                    ->toArray();
+                
+                if (!in_array($validated['project_id'], $allowedProjectIds)) {
+                    return redirect()->back()->with('error', 'Unauthorized project access')->withInput();
+                }
             }
-        }
 
-        $distributor->update($validated);
-        
-        if ($distributor->user) {
-            $distributor->user->update(['name' => $validated['name']]);
-        }
+            $distributor->update($validated);
+            
+            if ($distributor->user) {
+                $distributor->user->update(['name' => $validated['name']]);
+            }
 
-        return redirect()->route('distributors.index')->with('success', 'Distributor updated successfully');
+            return redirect()->route('distributors.index')->with('success', 'Distributor updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update distributor: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function destroy(Distributor $distributor)

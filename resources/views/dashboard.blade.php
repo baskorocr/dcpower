@@ -13,7 +13,7 @@
     </x-slot>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 gap-5 mb-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-5 mb-6 sm:grid-cols-2 lg:grid-cols-5">
         <!-- Stock Manufactured -->
         <div class="relative overflow-hidden p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl border-2 border-blue-200 dark:border-blue-700">
             <div class="flex items-start justify-between">
@@ -39,6 +39,21 @@
                 <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock at Retail -->
+        <div class="relative overflow-hidden p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-700 cursor-pointer hover:scale-105 transition-transform" onclick="showRetailModal()">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">{{ __('At Retail') }}</p>
+                    <p class="mt-3 text-4xl font-black text-purple-900 dark:text-purple-100">{{ number_format($stats['stock_retail']) }}</p>
+                </div>
+                <div class="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
             </div>
@@ -94,6 +109,7 @@
                 <option value="">All Status</option>
                 <option value="manufactured" {{ request('status') == 'manufactured' ? 'selected' : '' }}>Manufactured</option>
                 <option value="in_distributor" {{ request('status') == 'in_distributor' ? 'selected' : '' }}>In Distributor</option>
+                <option value="retail" {{ request('status') == 'retail' ? 'selected' : '' }}>Retail</option>
                 <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Sold</option>
                 <option value="claimed" {{ request('status') == 'claimed' ? 'selected' : '' }}>Claimed</option>
             </select>
@@ -152,77 +168,8 @@
         @endif
     </div>
 
-    <!-- Recent Sales & Low Stock -->
-    <div class="grid grid-cols-1 gap-5 mb-6 lg:grid-cols-2">
-        <!-- Recent Sales -->
-        <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl border-2 border-emerald-100 dark:border-emerald-800">
-            <div class="flex items-center gap-2 mb-4">
-                <div class="w-1 h-6 bg-gradient-to-b from-emerald-500 to-teal-500 rounded-full"></div>
-                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ __('Recent Sales') }}</h3>
-            </div>
-            @if($stats['recent_sales']->count() > 0)
-            <div class="space-y-3">
-                @foreach($stats['recent_sales'] as $sale)
-                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/10">
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $sale->product->serial_number }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $sale->distributor->name }}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($sale->sale_price) }}</p>
-                        <p class="text-xs text-gray-500">{{ $sale->created_at->diffForHumans() }}</p>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-            @else
-            <p class="text-center py-8 text-gray-500">No sales yet</p>
-            @endif
-        </div>
-
-        <!-- Low Stock Alert -->
-        <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl border-2 border-orange-100 dark:border-orange-800">
-            <div class="flex items-center gap-2 mb-4">
-                <div class="w-1 h-6 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></div>
-                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ __('Low Stock Alert') }}</h3>
-            </div>
-            @if($stats['low_stock_distributors']->count() > 0)
-            <div class="space-y-3">
-                @foreach($stats['low_stock_distributors'] as $dist)
-                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-orange-50 dark:hover:bg-orange-900/10">
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $dist->name }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $dist->city }}</p>
-                    </div>
-                    <span class="px-3 py-1 text-xs font-bold bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 rounded-full">
-                        {{ $dist->stock_count ?? 0 }} units
-                    </span>
-                </div>
-                @endforeach
-            </div>
-            @else
-            <p class="text-center py-8 text-gray-500">All distributors have sufficient stock</p>
-            @endif
-        </div>
-    </div>
-
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 gap-5 mb-6 sm:grid-cols-2 lg:grid-cols-2">
-        <!-- Total Sales Revenue -->
-        <div class="relative overflow-hidden p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-700">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">{{ __('Total Sales Revenue') }}</p>
-                    <p class="mt-3 text-3xl font-black text-purple-900 dark:text-purple-100">Rp {{ number_format($stats['total_sales']) }}</p>
-                </div>
-                <div class="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-
         <!-- Active Sessions -->
         <div class="relative overflow-hidden p-6 bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 rounded-2xl border-2 border-teal-200 dark:border-teal-700">
             <div class="flex items-start justify-between">
@@ -284,6 +231,31 @@
         </div>
     </div>
 
+    <!-- Retail Stock Modal -->
+    <div id="retailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-dark-eval-1 rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">Retail Stock Details</h3>
+                <button onclick="closeRetailModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
+                <div id="retailTableContent">
+                    <div class="text-center py-8">
+                        <svg class="animate-spin h-8 w-8 mx-auto text-purple-600" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-2 text-gray-600 dark:text-gray-400">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showDistributorModal() {
             document.getElementById('distributorModal').classList.remove('hidden');
@@ -313,6 +285,36 @@
 
         function closeDistributorModal() {
             document.getElementById('distributorModal').classList.add('hidden');
+        }
+
+        function showRetailModal() {
+            document.getElementById('retailModal').classList.remove('hidden');
+            fetch('{{ route('dashboard.retail-stocks') }}')
+                .then(res => res.json())
+                .then(data => {
+                    let html = '<table class="w-full"><thead class="bg-purple-50 dark:bg-purple-900/20"><tr>';
+                    html += '<th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase">Name</th>';
+                    html += '<th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase">Distributor</th>';
+                    html += '<th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase">City</th>';
+                    html += '<th class="px-4 py-3 text-right text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase">Stock</th>';
+                    html += '</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">';
+                    
+                    data.forEach(retail => {
+                        html += '<tr class="hover:bg-purple-50 dark:hover:bg-purple-900/10">';
+                        html += `<td class="px-4 py-3 font-medium">${retail.name}</td>`;
+                        html += `<td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">${retail.distributor?.name || '-'}</td>`;
+                        html += `<td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">${retail.city || '-'}</td>`;
+                        html += `<td class="px-4 py-3 text-right"><span class="px-3 py-1 text-xs font-bold rounded-full ${retail.stock_count < 10 ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">${retail.stock_count || 0} units</span></td>`;
+                        html += '</tr>';
+                    });
+                    
+                    html += '</tbody></table>';
+                    document.getElementById('retailTableContent').innerHTML = html;
+                });
+        }
+
+        function closeRetailModal() {
+            document.getElementById('retailModal').classList.add('hidden');
         }
     </script>
 </x-app-layout>

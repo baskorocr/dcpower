@@ -5,36 +5,36 @@
     <title>Print Packing Label - {{ $standardPacking->packing_code }}</title>
     <style>
         @page {
-            size: 100mm 150mm;
+            size: 100mm 70mm;
             margin: 0;
         }
         body {
             margin: 0;
-            padding: 5mm;
+            padding: 3mm;
             font-family: Arial, sans-serif;
             width: 100mm;
-            height: 150mm;
+            height: 70mm;
             box-sizing: border-box;
         }
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 2px solid #000;
-            padding-bottom: 3mm;
-            margin-bottom: 3mm;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2mm;
+            margin-bottom: 2mm;
         }
         .logo {
-            width: 15mm;
-            height: 15mm;
+            width: 12mm;
+            height: 12mm;
             background: #333;
-            border-radius: 3px;
+            border-radius: 2px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            font-size: 8pt;
+            font-size: 6pt;
         }
         .header-info {
             flex: 1;
@@ -42,42 +42,44 @@
             margin: 0 2mm;
         }
         .packing-qr {
-            width: 20mm;
-            height: 20mm;
+            width: 15mm;
+            height: 15mm;
         }
         .packing-qr svg {
-            width: 20mm;
-            height: 20mm;
+            width: 15mm;
+            height: 15mm;
         }
         .project-name {
-            font-size: 9pt;
+            font-size: 7pt;
             font-weight: bold;
         }
         .packing-code {
-            font-size: 16pt;
+            font-size: 12pt;
             font-weight: bold;
             font-family: 'Courier New', monospace;
-            margin: 1mm 0;
-            letter-spacing: 1px;
+            margin: 0.5mm 0;
+            letter-spacing: 0.5px;
         }
         .quantity {
-            font-size: 11pt;
+            font-size: 8pt;
             font-weight: bold;
         }
         .items-title {
-            font-size: 8pt;
+            font-size: 7pt;
             font-weight: bold;
-            margin: 2mm 0;
+            margin: 1mm 0;
             border-bottom: 1px solid #333;
-            padding-bottom: 1mm;
+            padding-bottom: 0.5mm;
         }
         .items-list {
-            font-size: 7pt;
+            font-size: 6pt;
+            max-height: 45mm;
+            overflow: hidden;
         }
         .item {
             display: flex;
             align-items: center;
-            padding: 1mm 0;
+            padding: 0.5mm 0;
             border-bottom: 1px dotted #ddd;
         }
         .item-text {
@@ -85,12 +87,12 @@
             font-family: 'Courier New', monospace;
         }
         .item-barcode {
-            width: 25mm;
+            width: 20mm;
             text-align: right;
         }
         .item-barcode svg {
-            width: 10mm;
-            height: 10mm;
+            width: 8mm;
+            height: 8mm;
         }
     </style>
 </head>

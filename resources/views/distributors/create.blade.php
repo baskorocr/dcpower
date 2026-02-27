@@ -3,6 +3,9 @@
         <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Add New Distributor</h2>
     </x-slot>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl">
         <form action="{{ route('distributors.store') }}" method="POST">
             @csrf
@@ -56,6 +59,21 @@
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Address</label>
                     <textarea name="address" rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200"></textarea>
                 </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Latitude</label>
+                    <input type="text" id="latitude" name="latitude" readonly class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Longitude</label>
+                    <input type="text" id="longitude" name="longitude" readonly class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location (Click on map to set)</label>
+                    <div id="map" class="rounded-lg border border-gray-300 dark:border-gray-600" style="height: 400px; width: 100%; min-height: 300px;"></div>
+                </div>
             </div>
 
             <div class="mt-6 flex gap-3">
@@ -64,4 +82,34 @@
             </div>
         </form>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const map = L.map('map').setView([-6.2088, 106.8456], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            setTimeout(() => map.invalidateSize(), 100);
+            
+            let marker;
+            
+            map.on('click', function(e) {
+                if (marker) {
+                    marker.setLatLng(e.latlng);
+                } else {
+                    marker = L.marker(e.latlng, {draggable: true}).addTo(map);
+                    marker.on('dragend', function(e) {
+                        const pos = marker.getLatLng();
+                        document.getElementById('latitude').value = pos.lat.toFixed(8);
+                        document.getElementById('longitude').value = pos.lng.toFixed(8);
+                    });
+                }
+                document.getElementById('latitude').value = e.latlng.lat.toFixed(8);
+                document.getElementById('longitude').value = e.latlng.lng.toFixed(8);
+            });
+        });
+    </script>
 </x-app-layout>

@@ -18,120 +18,30 @@ Route::get('/', function () {
     return view('landing');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard/distributor-stocks', function () {
-        $user = auth()->user();
-        
-        if ($user->hasRole('admin')) {
-            $projectIds = \App\Models\Project::pluck('id');
-        } elseif ($user->hasRole('distributor')) {
-            $distributor = \App\Models\Distributor::where('user_id', $user->id)->first();
-            $projectIds = $distributor ? collect([$distributor->project_id]) : collect([]);
-        } else {
-            $projectIds = \DB::table('project_users')->where('user_id', $user->id)->pluck('project_id');
-        }
-        
-        $distributors = \App\Models\Distributor::with('project')
-            ->whereIn('project_id', $projectIds)
-            ->get()
-            ->map(function($dist) {
-                $dist->stock_count = \App\Models\Product::where('status', 'in_distributor')
-                    ->whereHas('stockMovements', fn($q) => $q->where('distributor_id', $dist->id))
-                    ->count();
-                return $dist;
-            });
-        
-        return response()->json($distributors);
-    })->name('dashboard.distributor-stocks');
+// Warranty Menu (Public)
+Route::get('warranty', function () {
+    return view('warranty-menu');
+})->name('warranty.menu');
 
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
-        
-        // Buyer Dashboard
-        if ($user->hasRole('buyer')) {
-            $recentPurchases = \App\Models\Sale::with(['product', 'distributor'])
-                ->where('buyer_user_id', $user->id)
-                ->latest()
-                ->take(5)
-                ->get();
-            
-            $recentClaims = \App\Models\WarrantyClaim::with(['product', 'sale'])
-                ->where('claimed_by_user_id', $user->id)
-                ->latest()
-                ->take(5)
-                ->get();
-            
-            return view('dashboard-buyer', compact('recentPurchases', 'recentClaims'));
-        }
-        
-        // Determine project IDs based on role
-        if ($user->hasRole('admin')) {
-            $projectIds = \App\Models\Project::pluck('id');
-        } elseif ($user->hasRole('distributor')) {
-            // Distributor only sees their own distributor's project
-            $distributor = \App\Models\Distributor::where('user_id', $user->id)->first();
-            $projectIds = $distributor ? collect([$distributor->project_id]) : collect([]);
-        } else {
-            // Project users see their assigned projects
-            $projectIds = \DB::table('project_users')->where('user_id', $user->id)->pluck('project_id');
-        }
-        
-        // Products with filtering
-        $query = \App\Models\Product::with(['project', 'creator'])->whereIn('project_id', $projectIds);
-        
-        // Distributor only sees products in their stock
-        if ($user->hasRole('distributor')) {
-            $distributor = \App\Models\Distributor::where('user_id', $user->id)->first();
-            if ($distributor) {
-                $productIds = \DB::table('stock_movements')
-                    ->where('distributor_id', $distributor->id)
-                    ->pluck('product_id');
-                $query->whereIn('id', $productIds);
-            }
-        }
-        
-        if (request('status')) $query->where('status', request('status'));
-        if (request('project')) $query->where('project_id', request('project'));
-        $products = $query->latest()->take(10)->get();
-        
-        // Stats
-        if ($user->hasRole('distributor')) {
-            $distributor = \App\Models\Distributor::where('user_id', $user->id)->first();
-            $myStock = $distributor ? \DB::table('stock_movements')
-                ->where('distributor_id', $distributor->id)
-                ->selectRaw('SUM(CASE WHEN type = "in" THEN quantity ELSE -quantity END) as total')
-                ->value('total') : 0;
-            
-            $stats = [
-                'stock_manufactured' => 0,
-                'stock_distributor' => $myStock ?? 0,
-                'total_sold' => $distributor ? \App\Models\Sale::where('distributor_id', $distributor->id)->count() : 0,
-                'pending_claims' => $distributor ? \App\Models\WarrantyClaim::whereHas('sale', fn($q) => $q->where('distributor_id', $distributor->id))->whereIn('status', ['pending', 'under_review'])->count() : 0,
-                'total_sales' => $distributor ? \App\Models\Sale::where('distributor_id', $distributor->id)->sum('sale_price') : 0,
-                'recent_sales' => $distributor ? \App\Models\Sale::with(['product', 'distributor'])->where('distributor_id', $distributor->id)->latest()->take(5)->get() : collect([]),
-                'low_stock_distributors' => collect([]),
-            ];
-        } else {
-            // Apply filters to stats
-            $statsProjectIds = request('project') ? collect([request('project')]) : $projectIds;
-            
-            $stats = [
-                'stock_manufactured' => \App\Models\Product::whereIn('project_id', $statsProjectIds)->where('status', 'manufactured')->count(),
-                'stock_distributor' => \App\Models\Product::whereIn('project_id', $statsProjectIds)->where('status', 'in_distributor')->count(),
-                'total_sold' => \App\Models\Product::whereIn('project_id', $statsProjectIds)->where('status', 'sold')->count(),
-                'pending_claims' => \App\Models\WarrantyClaim::whereHas('product', fn($q) => $q->whereIn('project_id', $statsProjectIds))->whereIn('status', ['pending', 'under_review'])->count(),
-                'total_sales' => \App\Models\Sale::whereHas('product', fn($q) => $q->whereIn('project_id', $statsProjectIds))->sum('sale_price'),
-                'recent_sales' => \App\Models\Sale::with(['product', 'distributor'])->whereHas('product', fn($q) => $q->whereIn('project_id', $statsProjectIds))->latest()->take(5)->get(),
-                'low_stock_distributors' => \App\Models\Distributor::whereIn('project_id', $statsProjectIds)
-                    ->withCount(['stockMovements as stock_count' => fn($q) => $q->selectRaw('SUM(CASE WHEN type = "in" THEN quantity ELSE -quantity END)')])
-                    ->having('stock_count', '<', 10)->take(5)->get(),
-            ];
-        }
-        
-        $projects = \App\Models\Project::whereIn('id', $projectIds)->get();
-        
-        return view('dashboard', compact('products', 'stats', 'projects'));
-    })->name('dashboard');
+// Warranty Activation (Public - Retail with PIN)
+Route::get('warranty/activation/login', [\App\Http\Controllers\WarrantyActivationController::class, 'login'])->name('warranty.activation.login');
+Route::post('warranty/activation/verify', [\App\Http\Controllers\WarrantyActivationController::class, 'verify'])->name('warranty.activation.verify');
+Route::get('warranty/activation', [\App\Http\Controllers\WarrantyActivationController::class, 'index'])->name('warranty.activation');
+Route::post('warranty/activate', [\App\Http\Controllers\WarrantyActivationController::class, 'activate'])->name('warranty.activate');
+Route::get('warranty/activation/logout', [\App\Http\Controllers\WarrantyActivationController::class, 'logout'])->name('warranty.activation.logout');
+
+// Warranty Replacement (Public - Retail with PIN)
+Route::get('warranty-replacement/login', [\App\Http\Controllers\WarrantyReplacementPublicController::class, 'login'])->name('warranty.replacement.login');
+Route::post('warranty-replacement/verify', [\App\Http\Controllers\WarrantyReplacementPublicController::class, 'verify'])->name('warranty.replacement.verify');
+Route::get('warranty-replacement/logout', [\App\Http\Controllers\WarrantyReplacementPublicController::class, 'logout'])->name('warranty.replacement.logout');
+Route::get('warranty-replacement', [\App\Http\Controllers\WarrantyReplacementPublicController::class, 'index'])->name('warranty.replacement.index');
+Route::get('warranty-replacement/{claim}', [\App\Http\Controllers\WarrantyReplacementPublicController::class, 'show'])->name('warranty.replacement.show');
+Route::post('warranty-replacement/{claim}/scan', [\App\Http\Controllers\WarrantyReplacementPublicController::class, 'scan'])->name('warranty.replacement.scan');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard/distributor-stocks', [\App\Http\Controllers\DashboardController::class, 'distributorStocks'])->name('dashboard.distributor-stocks');
+    Route::get('/dashboard/retail-stocks', [\App\Http\Controllers\DashboardController::class, 'retailStocks'])->name('dashboard.retail-stocks');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -161,8 +71,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('distributors', \App\Http\Controllers\DistributorController::class);
     });
 
+    // Retails
+    Route::middleware('permission:manage-retails')->group(function () {
+        Route::resource('retails', \App\Http\Controllers\RetailController::class);
+    });
+
     // Products
     Route::middleware('permission:manage-products')->group(function () {
+        Route::get('products/print', [\App\Http\Controllers\Admin\ProductController::class, 'print'])->name('products.print');
         Route::post('products/bulk-delete', [\App\Http\Controllers\Admin\ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
         Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     });
@@ -190,13 +106,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stock-out/process', [\App\Http\Controllers\StockOutController::class, 'process'])->name('stock-out.process');
     });
 
-    // Sales
-    Route::middleware('permission:view-sales|manage-sales')->group(function () {
-        Route::resource('sales', \App\Http\Controllers\Admin\SaleController::class);
-    });
-
     // Warranty Claims
-    Route::middleware('permission:view-claims|manage-claims|submit-claims')->group(function () {
+    Route::middleware('permission:view-claims|manage-claims')->group(function () {
+        Route::post('warranty-claims/check-serial', [\App\Http\Controllers\Admin\WarrantyClaimController::class, 'checkSerial'])->name('warranty-claims.check-serial');
         Route::resource('warranty-claims', \App\Http\Controllers\Admin\WarrantyClaimController::class);
     });
 
@@ -207,6 +119,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('claim-approvals/{claim}/approve', [\App\Http\Controllers\Admin\ClaimApprovalController::class, 'approve'])->name('claim-approvals.approve');
         Route::post('claim-approvals/{claim}/reject', [\App\Http\Controllers\Admin\ClaimApprovalController::class, 'reject'])->name('claim-approvals.reject');
     });
+
+    // Claim History (Admin only)
+    Route::middleware('permission:view-claim-history')->group(function () {
+        Route::get('claim-history', [\App\Http\Controllers\Admin\ClaimHistoryController::class, 'index'])->name('claim-history.index');
+    });
+});
+
+// Public API for retail locations
+Route::get('/api/retails/locations', function () {
+    return \App\Models\Retail::where('status', 'active')
+        ->whereNotNull('latitude')
+        ->whereNotNull('longitude')
+        ->select('id', 'name', 'city', 'province', 'latitude', 'longitude')
+        ->get();
 });
 
 require __DIR__ . '/auth.php';

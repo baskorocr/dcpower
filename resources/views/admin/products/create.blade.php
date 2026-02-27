@@ -151,18 +151,13 @@
 
         console.log('Script loaded, qrInput:', qrInput);
 
-        // Force focus
+        // Initial focus only
         setTimeout(() => qrInput.focus(), 100);
-        setInterval(() => {
-            const activeElement = document.activeElement;
-            // Don't force focus if user is interacting with variant select
-            if (variantSelect && activeElement === variantSelect) {
-                return;
-            }
-            if (activeElement !== qrInput && printModal.classList.contains('hidden')) {
-                qrInput.focus();
-            }
-        }, 100);
+        
+        // Re-focus only after successful scan
+        function refocusInput() {
+            setTimeout(() => qrInput.focus(), 100);
+        }
 
         // Handle scan - detect fast input from scanner
         let scanTimeout;
@@ -182,6 +177,7 @@
                 
                 addSerial(serial);
                 this.value = '';
+                refocusInput();
                 
                 // Auto submit if reached standard packing quantity
                 if (standardPackingQty && scannedSerials.length === standardPackingQty) {
@@ -209,6 +205,7 @@
                 
                 addSerial(serial);
                 this.value = '';
+                refocusInput();
                 
                 // Auto submit if reached standard packing quantity
                 if (standardPackingQty && scannedSerials.length === standardPackingQty) {
