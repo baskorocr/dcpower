@@ -34,9 +34,17 @@
 
                 <form method="POST" action="{{ route('warranty.activation.verify') }}">
                     @csrf
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
+                        <input type="text" name="phone" required
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                            placeholder="08xxxxxxxxxx" value="{{ old('phone') }}">
+                        @error('phone')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
+                    </div>
+
                     <div class="mb-6">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">PIN Retail (6 digit)</label>
-                        <input type="password" name="pin" maxlength="6" pattern="[0-9]{6}" required autofocus
+                        <input type="password" name="pin" maxlength="6" pattern="[0-9]{6}" required
                             class="w-full px-4 py-3 text-center text-2xl font-mono border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="••••••">
                         @error('pin')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror

@@ -12,7 +12,7 @@
             </div>
             @endif
 
-            <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Status</p>
                     <span class="px-3 py-1 text-sm rounded-full 
@@ -86,7 +86,7 @@
                     <p class="font-semibold">{{ $warrantyClaim->has_modification ? 'Ya' : 'Tidak' }}</p>
                 </div>
                 @if($warrantyClaim->has_modification && $warrantyClaim->modification_types)
-                <div class="col-span-2">
+                <div class="col-span-1 md:col-span-2">
                     <p class="text-sm text-gray-500 dark:text-gray-400">Jenis Modifikasi</p>
                     <div class="flex flex-wrap gap-2 mt-1">
                         @foreach($warrantyClaim->modification_types as $mod)
@@ -115,7 +115,7 @@
             @if($warrantyClaim->photo_evidence)
             <div class="mb-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Photo Evidence</p>
-                <img src="{{ asset('storage/' . $warrantyClaim->photo_evidence) }}" alt="Evidence" class="max-w-md rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition" onclick="openImageModal(this.src)">
+                <img src="{{ asset('storage/' . $warrantyClaim->photo_evidence) }}" alt="Evidence" class="w-full max-w-xs md:max-w-sm rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition" onclick="openImageModal(this.src)">
             </div>
             @endif
 

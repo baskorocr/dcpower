@@ -216,6 +216,13 @@
 
         function addSerial(serial) {
             console.log('addSerial called with:', serial);
+            
+            // Prevent adding more than standard packing quantity
+            if (standardPackingQty && scannedSerials.length >= standardPackingQty) {
+                alert(`Cannot scan more than ${standardPackingQty} items for standard packing!`);
+                return;
+            }
+            
             scannedSerials.push(serial);
             console.log('scannedSerials now:', scannedSerials);
             updateList();

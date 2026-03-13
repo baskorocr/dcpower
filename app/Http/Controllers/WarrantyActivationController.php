@@ -28,12 +28,18 @@ class WarrantyActivationController extends Controller
 
     public function verify(Request $request)
     {
-        $request->validate(['pin' => 'required|string|size:6']);
+        $request->validate([
+            'phone' => 'required|string',
+            'pin' => 'required|string|size:6'
+        ]);
 
-        $retail = Retail::where('pin', $request->pin)->where('status', 'active')->first();
+        $retail = Retail::where('pin', $request->pin)
+            ->where('phone', $request->phone)
+            ->where('status', 'active')
+            ->first();
 
         if (!$retail) {
-            return back()->with('error', 'PIN tidak valid atau retail tidak aktif');
+            return back()->withInput()->with('error', 'Nomor telepon atau PIN tidak valid, atau retail tidak aktif');
         }
 
         session(['retail_activation_id' => $retail->id, 'retail_activation_name' => $retail->name]);

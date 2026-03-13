@@ -136,6 +136,16 @@ class ProductController extends Controller
         $createdProducts = [];
         $standardPacking = null;
 
+        // Validate standard packing quantity
+        if ($project->standard_packing_quantity) {
+            if (count($serialNumbers) != $project->standard_packing_quantity) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => "Standard packing requires exactly {$project->standard_packing_quantity} items. You scanned " . count($serialNumbers) . " items."
+                ], 422);
+            }
+        }
+
         // Check if project uses standard packing
         if ($project->standard_packing_quantity && count($serialNumbers) == $project->standard_packing_quantity) {
             // Generate packing code based on format
