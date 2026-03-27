@@ -30,6 +30,9 @@ class RolePermissionSeeder extends Seeder
             'approve-claims',
             'manage-roles',
             'process-replacements',
+            'manage-retails',
+            'view-claim-history',
+            'manage-contact-messages',
         ];
 
         foreach ($permissions as $permission) {

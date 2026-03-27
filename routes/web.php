@@ -15,8 +15,8 @@ use App\Http\Controllers\ProfileController;
 */
 
 Route::get('/', function () {
-    return view('landing');
-});
+   return view('landing');
+   });
 
 // Warranty Menu (Public)
 Route::get('warranty', function () {
@@ -124,6 +124,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('permission:view-claim-history')->group(function () {
         Route::get('claim-history', [\App\Http\Controllers\Admin\ClaimHistoryController::class, 'index'])->name('claim-history.index');
     });
+
+    // Contact Messages (Admin only)
+    Route::middleware('permission:manage-contact-messages')->group(function () {
+        Route::get('contact-messages', [\App\Http\Controllers\Admin\ContactMessageAdminController::class, 'index'])->name('contact-messages.index');
+        Route::get('contact-messages/{message}', [\App\Http\Controllers\Admin\ContactMessageAdminController::class, 'show'])->name('contact-messages.show');
+        Route::delete('contact-messages/{message}', [\App\Http\Controllers\Admin\ContactMessageAdminController::class, 'destroy'])->name('contact-messages.destroy');
+    });
 });
 
 // Public API for retail locations
@@ -134,5 +141,8 @@ Route::get('/api/retails/locations', function () {
         ->select('id', 'name', 'city', 'province', 'latitude', 'longitude')
         ->get();
 });
+
+// Contact Message
+Route::post('/contact', [\App\Http\Controllers\ContactMessageController::class, 'store'])->name('contact.store');
 
 require __DIR__ . '/auth.php';

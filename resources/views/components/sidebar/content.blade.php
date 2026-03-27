@@ -116,4 +116,19 @@
     </x-sidebar.link>
     @endcan
 
+    @can('manage-contact-messages')
+    <x-sidebar.link title="Contact Messages" href="{{ route('contact-messages.index') }}" :isActive="request()->routeIs('contact-messages.*')">
+        <x-slot name="icon">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+        </x-slot>
+        @if(isset($unreadMessages) && $unreadMessages > 0)
+        <x-slot name="badge">
+            <span class="ml-auto px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">{{ $unreadMessages }}</span>
+        </x-slot>
+        @endif
+    </x-sidebar.link>
+    @endcan
+
 </x-perfect-scrollbar>

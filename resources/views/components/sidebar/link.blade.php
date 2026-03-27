@@ -12,10 +12,16 @@
     <button type="button" {{ $attributes->merge(['class' => $classes]) }}>
         @if ($icon ?? false) {{ $icon }} @else <x-icons.empty-circle class="w-5 h-5" /> @endif
         <span class="text-sm font-medium" x-show="isSidebarOpen || isSidebarHovered">{{ $title }}</span>
+        @if ($badge ?? false)
+            <span x-show="isSidebarOpen || isSidebarHovered">{{ $badge }}</span>
+        @endif
     </button>
 @else
     <a {{ $attributes->merge(['class' => $classes]) }}>
         @if ($icon ?? false) {{ $icon }} @else <x-icons.empty-circle class="w-5 h-5" /> @endif
         <span class="text-sm font-medium" x-show="isSidebarOpen || isSidebarHovered">{{ $title }}</span>
+        @if ($badge ?? false)
+            <span x-show="isSidebarOpen || isSidebarHovered">{{ $badge }}</span>
+        @endif
     </a>
 @endif

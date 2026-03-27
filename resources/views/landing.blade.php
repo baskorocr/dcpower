@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DC Connect - Battery Pack & Energy Solutions</title>
+    <title>DC Power - Battery Pack & Energy Solutions</title>
+    <link rel="icon" type="image/png" href="{{ asset('dc.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         @keyframes fadeInUp {
@@ -45,7 +46,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <span class="text-2xl font-bold text-emerald-600">DC Connect</span>
+                    <img src="{{ asset('dc.png') }}" alt="DC Power" class="h-10">
                 </div>
                 
                 <!-- Desktop Menu -->
@@ -158,15 +159,28 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Battery Pack -->
+                <!-- Battery Swap Station -->
+                <div class="group bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-16 h-16 bg-emerald-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Battery Swap Station</h3>
+                    <p class="text-gray-600 mb-3">Quick battery swapping solutions for electric vehicles and fleet management.</p>
+                    <p class="text-sm text-emerald-600 font-medium">Dharma Controlcable Indonesia</p>
+                </div>
+
+                <!-- BESS & Battery Pack -->
                 <div class="group bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                     <div class="w-16 h-16 bg-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Battery Pack</h3>
-                    <p class="text-gray-600">High-capacity lithium battery packs for electric vehicles and energy storage systems.</p>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">BESS & Battery Pack</h3>
+                    <p class="text-gray-600 mb-3">High-capacity battery energy storage systems for residential and industrial applications.</p>
+                    <p class="text-sm text-emerald-600 font-medium">Dharma Controlcable Indonesia</p>
                 </div>
 
                 <!-- Charging Station -->
@@ -177,29 +191,8 @@
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-3">Charging Station</h3>
-                    <p class="text-gray-600">Fast and efficient EV charging stations for commercial and residential use.</p>
-                </div>
-
-                <!-- Solar Panel -->
-                <div class="group bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="w-16 h-16 bg-teal-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Solar Panel</h3>
-                    <p class="text-gray-600">High-efficiency solar panels for renewable energy generation.</p>
-                </div>
-
-                <!-- Lithium Battery -->
-                <div class="group bg-gradient-to-br from-cyan-50 to-emerald-50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="w-16 h-16 bg-cyan-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Aki Litium</h3>
-                    <p class="text-gray-600">Advanced lithium-ion batteries with long lifespan and high performance.</p>
+                    <p class="text-gray-600 mb-3">Fast and portable EV charging stations for commercial and residential use.</p>
+                    <p class="text-sm text-green-600 font-medium">Dharma Precision Tools • Dharma Electrindo Manufacturing</p>
                 </div>
 
                 <!-- BLDC Motor -->
@@ -211,18 +204,20 @@
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-3">BLDC Motor</h3>
-                    <p class="text-gray-600">Brushless DC motors for efficient and reliable electric vehicle propulsion.</p>
+                    <p class="text-gray-600 mb-3">Brushless DC motors (Hub Drive & Mid Drive) for efficient electric vehicle propulsion.</p>
+                    <p class="text-sm text-lime-600 font-medium">Dharma Precision Parts</p>
                 </div>
 
-                <!-- Battery Swap -->
-                <div class="group bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="w-16 h-16 bg-emerald-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                <!-- Auxiliary Battery -->
+                <div class="group bg-gradient-to-br from-cyan-50 to-emerald-50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-16 h-16 bg-cyan-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Battery Swap</h3>
-                    <p class="text-gray-600">Quick battery swapping solutions for electric vehicles and fleet management.</p>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Auxiliary Battery 12V</h3>
+                    <p class="text-gray-600 mb-3">Reliable 12V auxiliary batteries for vehicle electrical systems.</p>
+                    <p class="text-sm text-cyan-600 font-medium">Dharma Controlcable Indonesia</p>
                 </div>
             </div>
         </div>
@@ -338,7 +333,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div class="animate-fade-in-up">
-                    <h2 class="text-4xl md:text-5xl font-bold mb-6">About DC Connect</h2>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">About DC Power</h2>
                     <p class="text-xl mb-6 text-emerald-100">
                         We are a leading manufacturer specializing in advanced energy solutions for the modern world.
                     </p>
@@ -376,23 +371,40 @@
                 <p class="text-xl text-gray-600">Have questions? We'd love to hear from you.</p>
             </div>
 
+            @if(session('success'))
+            <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if($errors->any())
+            <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <ul class="list-disc list-inside">
+                    @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Contact Form -->
                 <div class="bg-white rounded-2xl shadow-xl p-8">
-                    <form class="space-y-6">
+                    <form method="POST" action="{{ route('contact.store') }}" class="space-y-6">
+                        @csrf
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+                                <input type="text" name="name" value="{{ old('name') }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                <input type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+                                <input type="email" name="email" value="{{ old('email') }}" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                            <textarea rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent"></textarea>
+                            <textarea name="message" rows="5" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-transparent">{{ old('message') }}</textarea>
                         </div>
                         <button type="submit" class="w-full px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-lg font-semibold transition transform hover:scale-105">
                             Send Message
@@ -414,7 +426,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-2xl font-bold mb-4">DC Connect</h3>
+                    <img src="{{ asset('dc.png') }}" alt="DC Power" class="h-10 mb-4">
                     <p class="text-gray-400">Powering your future with innovative energy solutions.</p>
                 </div>
                 <div>
@@ -436,7 +448,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; 2026 DC Connect. All rights reserved.</p>
+                <p>&copy; 2026 DC Power. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -519,13 +531,22 @@
         fetch('/api/retails/locations')
             .then(response => response.json())
             .then(retails => {
+                const markers = [];
+                
                 retails.forEach(retail => {
                     if (retail.latitude && retail.longitude) {
-                        L.marker([retail.latitude, retail.longitude])
+                        const marker = L.marker([retail.latitude, retail.longitude])
                             .bindPopup(`<b>${retail.name}</b><br>${retail.city || ''}, ${retail.province || ''}`)
                             .addTo(retailMap);
+                        markers.push(marker);
                     }
                 });
+                
+                // Fokuskan map ke area yang dekat dengan marker
+                if (markers.length > 0) {
+                    const group = L.featureGroup(markers);
+                    retailMap.fitBounds(group.getBounds().pad(0.1));
+                }
             });
     </script>
 </body>

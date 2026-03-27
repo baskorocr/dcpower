@@ -9,9 +9,22 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $query = User::with('roles', 'projects', 'distributor.project');
+        
+        // Filter by role
+        if ($request->filled('role')) {
+            $query->role($request->role);
+        }
+        
+        // Search by name or email
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
         
         if (!auth()->user()->hasRole('admin')) {
             $projectIds = auth()->user()->projects->pluck('id');
@@ -20,8 +33,10 @@ class UserController extends Controller
             });
         }
         
-        $users = $query->latest()->paginate(20);
-        return view('admin.users.index', compact('users'));
+        $users = $query->latest()->paginate(15)->withQueryString();
+        $roles = Role::all();
+        
+        return view('admin.users.index', compact('users', 'roles'));
     }
 
     public function create()
