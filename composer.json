@@ -9,6 +9,7 @@
         "php": "^8.2",
         "blade-ui-kit/blade-heroicons": "^1.2",
         "laravel/framework": "^12.0",
+        "laravel/octane": "^2.17",
         "laravel/tinker": "^2.10.1",
         "milon/barcode": "^12.1",
         "simplesoftwareio/simple-qrcode": "^4.2",

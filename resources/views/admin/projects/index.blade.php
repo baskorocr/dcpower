@@ -40,7 +40,16 @@
                         <td class="px-4 py-3">{{ $project->warranty_duration }} months</td>
                         <td class="px-4 py-3 text-sm text-gray-500">{{ $project->created_at->format('d M Y') }}</td>
                         <td class="px-4 py-3">
-                            <a href="{{ route('projects.show', $project) }}" class="text-emerald-600 hover:text-emerald-700">View</a>
+                            <div class="flex items-center gap-3">
+                                <a href="{{ route('projects.show', $project) }}" class="text-emerald-600 hover:text-emerald-700">View</a>
+                                @role('admin')
+                                <form action="{{ route('projects.destroy', $project) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-700">Delete</button>
+                                </form>
+                                @endrole
+                            </div>
                         </td>
                     </tr>
                     @empty
