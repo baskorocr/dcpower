@@ -159,10 +159,10 @@ class StockOutController extends Controller
             $retailName = $retail ? $retail->name : 'Retail';
         }
         
-        $productIds = collect($products)->pluck('id')->unique();
+        // Get unique product IDs only (no duplicates)
+        $productIds = collect($products)->pluck('id')->unique()->values();
         
         foreach ($productIds as $productId) {
-            $count = collect($products)->where('id', $productId)->count();
             
             if ($isDistributor) {
                 // Distributor stock out to retail
@@ -171,14 +171,14 @@ class StockOutController extends Controller
                     'distributor_id' => $distributor->id,
                     'retail_id' => $validated['retail_id'] ?? null,
                     'type' => 'out',
-                    'quantity' => $count,
+                    'quantity' => 1,
                     'moved_at' => now(),
                 ]);
                 
                 $product = Product::find($productId);
                 if ($product && $product->status === 'in_distributor') {
-                    $newRetailStock = ($product->retail_stock ?? 0) + $count;
-                    $newDistributorStock = max(0, ($product->at_distributor ?? 0) - $count);
+                    $newRetailStock = ($product->retail_stock ?? 0) + 1;
+                    $newDistributorStock = max(0, ($product->at_distributor ?? 0) - 1);
                     
                     $product->update([
                         'retail_stock' => $newRetailStock,
@@ -203,7 +203,7 @@ class StockOutController extends Controller
                     'product_id' => $productId,
                     'distributor_id' => $distributor->id,
                     'type' => 'in',
-                    'quantity' => $count,
+                    'quantity' => 1,
                     'moved_at' => now(),
                 ]);
                 
@@ -211,7 +211,7 @@ class StockOutController extends Controller
                 if ($product && $product->status === 'manufactured') {
                     $product->update([
                         'status' => 'in_distributor',
-                        'at_distributor' => $count
+                        'at_distributor' => 1
                     ]);
                     
                     ProductTraceLog::create([

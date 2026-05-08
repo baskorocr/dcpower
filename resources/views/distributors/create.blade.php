@@ -5,6 +5,10 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        #map { z-index: 1; }
+    </style>
 
     <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl">
         <form action="{{ route('distributors.store') }}" method="POST">

@@ -218,6 +218,7 @@
 
         <!-- Update Status (for managers) -->
         @can('manage-claims')
+        @if(!in_array($warrantyClaim->status, ['approved', 'rejected', 'completed']))
         <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl border-2 border-emerald-100 dark:border-emerald-800">
             <h3 class="text-lg font-bold mb-4">Update Claim Status</h3>
             <form method="POST" action="{{ route('warranty-claims.update', $warrantyClaim) }}" class="space-y-4">
@@ -244,6 +245,7 @@
                 </button>
             </form>
         </div>
+        @endif
         @endcan
 
         <!-- History -->

@@ -14,7 +14,24 @@ class StandardPackingController extends Controller
         $query = StandardPacking::with(['project', 'creator', 'products']);
         
         // Get user's projects
-        if (!auth()->user()->hasRole('admin')) {
+        if (auth()->user()->hasRole('distributor')) {
+            $distributor = \App\Models\Distributor::where('user_id', auth()->id())->first();
+            if ($distributor) {
+                // Only show packings from distributor's project with products assigned to them
+                $query->where('project_id', $distributor->project_id)
+                    ->whereHas('products', function($q) use ($distributor) {
+                        $q->whereIn('id', function($subQuery) use ($distributor) {
+                            $subQuery->select('product_id')
+                                ->from('stock_movements')
+                                ->where('distributor_id', $distributor->id);
+                        });
+                    });
+                $projects = Project::where('id', $distributor->project_id)->get();
+            } else {
+                $query->whereRaw('1 = 0');
+                $projects = collect([]);
+            }
+        } elseif (!auth()->user()->hasRole('admin')) {
             $projectIds = auth()->user()->projects->pluck('id');
             $query->whereIn('project_id', $projectIds);
             $projects = auth()->user()->projects;
@@ -39,6 +56,23 @@ class StandardPackingController extends Controller
 
     public function show(StandardPacking $standardPacking)
     {
+        // Check distributor access
+        if (auth()->user()->hasRole('distributor')) {
+            $distributor = \App\Models\Distributor::where('user_id', auth()->id())->first();
+            if (!$distributor || $distributor->project_id !== $standardPacking->project_id) {
+                abort(403, 'Unauthorized access.');
+            }
+            
+            $productIds = $standardPacking->products()->pluck('id');
+            $hasAccess = \DB::table('stock_movements')
+                ->whereIn('product_id', $productIds)
+                ->where('distributor_id', $distributor->id)
+                ->exists();
+            if (!$hasAccess) {
+                abort(403, 'Unauthorized access.');
+            }
+        }
+
         $standardPacking->load(['project', 'creator', 'products.traceLogs']);
         return view('admin.standard-packings.show', compact('standardPacking'));
     }

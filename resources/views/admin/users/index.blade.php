@@ -15,6 +15,12 @@
         </div>
         @endif
 
+        @if(session('error'))
+        <div class="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 rounded-lg">
+            {{ session('error') }}
+        </div>
+        @endif
+
         <!-- Filter Section -->
         <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl border-2 border-emerald-100 dark:border-emerald-800">
             <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -67,7 +73,16 @@
                                 @endforeach
                             </td>
                             <td class="px-4 py-3">
-                                <a href="{{ route('users.edit', $user) }}" class="text-emerald-600 hover:text-emerald-700">Edit</a>
+                                <div class="flex gap-3">
+                                    <a href="{{ route('users.edit', $user) }}" class="text-emerald-600 hover:text-emerald-700">Edit</a>
+                                    @if($user->id !== auth()->id())
+                                    <form action="{{ route('users.destroy', $user) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-700">Delete</button>
+                                    </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @empty

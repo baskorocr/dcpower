@@ -157,4 +157,23 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
+
+    public function destroy(User $user)
+    {
+        if (!auth()->user()->hasRole('admin')) {
+            $projectIds = auth()->user()->projects->pluck('id');
+            $userProjectIds = $user->projects->pluck('id');
+            
+            if ($projectIds->intersect($userProjectIds)->isEmpty()) {
+                abort(403, 'Unauthorized access');
+            }
+        }
+
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Cannot delete your own account');
+        }
+
+        $user->delete();
+        return redirect()->route('users.index')->with('success', 'User deleted successfully');
+    }
 }

@@ -151,10 +151,16 @@
         async function processQRCode(qrCode) {
             if (!qrCode) return;
 
-            // Check if already scanned
-            const alreadyScanned = scannedProducts.find(p => p.serial_number === qrCode || p.qr_code === qrCode);
+            // Check if already scanned by serial_number or qr_code
+            const alreadyScanned = scannedProducts.find(p => 
+                p.serial_number === qrCode || 
+                p.qr_code === qrCode ||
+                p.id === qrCode
+            );
+            
             if (alreadyScanned) {
                 showMessage('Product already scanned!', 'error');
+                qrInput.focus();
                 return;
             }
 
@@ -172,14 +178,23 @@
 
                 if (data.success) {
                     if (data.is_packing) {
+                        let addedCount = 0;
                         data.products.forEach(product => {
-                            const alreadyExists = scannedProducts.find(p => p.id === product.id);
+                            const alreadyExists = scannedProducts.find(p => 
+                                p.id === product.id || 
+                                p.serial_number === product.serial_number
+                            );
                             if (!alreadyExists) {
                                 scannedProducts.push(product);
+                                addedCount++;
                             }
                         });
                         updateUI();
-                        showMessage(`Packing ${data.packing_code} added: ${data.products.length} products`, 'success');
+                        if (addedCount > 0) {
+                            showMessage(`Packing ${data.packing_code} added: ${addedCount} products`, 'success');
+                        } else {
+                            showMessage('All products in this packing already scanned', 'error');
+                        }
                     } else {
                         scannedProducts.push(data.product);
                         updateUI();
@@ -192,11 +207,27 @@
                 console.error('Error:', error);
                 showMessage('Error: ' + error.message, 'error');
             }
+            
+            qrInput.focus();
         }
+
+        // Auto-submit on scanner input (fast typing detection)
+        let scanTimeout;
+        qrInput.addEventListener('input', function(e) {
+            clearTimeout(scanTimeout);
+            scanTimeout = setTimeout(async () => {
+                const qrCode = this.value.trim();
+                if (qrCode) {
+                    await processQRCode(qrCode);
+                    this.value = '';
+                }
+            }, 200);
+        });
 
         qrInput.addEventListener('keypress', async function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
+                clearTimeout(scanTimeout);
                 const qrCode = this.value.trim();
                 if (qrCode) {
                     await processQRCode(qrCode);

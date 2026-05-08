@@ -72,7 +72,13 @@ class DashboardController extends Controller
         }
         
         $retails = $retails->map(function($retail) {
-            $retail->stock_count = Product::where('retail_stock', '>', 0)->count();
+            // Count products at this specific retail
+            $retail->stock_count = Product::where('status', 'at_retail')
+                ->whereHas('stockMovements', function($q) use ($retail) {
+                    $q->where('retail_id', $retail->id)
+                      ->where('type', 'out');
+                })
+                ->count();
             return $retail;
         });
         

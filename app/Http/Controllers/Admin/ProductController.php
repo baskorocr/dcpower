@@ -239,6 +239,22 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        // Check distributor access
+        if (auth()->user()->hasRole('distributor')) {
+            $distributor = \App\Models\Distributor::where('user_id', auth()->id())->first();
+            if (!$distributor || $distributor->project_id !== $product->project_id) {
+                abort(403, 'Unauthorized access.');
+            }
+            
+            $hasAccess = \DB::table('stock_movements')
+                ->where('product_id', $product->id)
+                ->where('distributor_id', $distributor->id)
+                ->exists();
+            if (!$hasAccess) {
+                abort(403, 'Unauthorized access.');
+            }
+        }
+
         $product->load(['traceLogs.user', 'warrantyClaims', 'standardPacking']);
         return view('admin.products.show', compact('product'));
     }

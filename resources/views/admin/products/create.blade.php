@@ -108,8 +108,8 @@
         </div>
 
         <!-- Print Modal -->
-        <div id="print_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white dark:bg-dark-eval-1 rounded-2xl p-8 max-w-md w-full mx-4">
+        <div id="print_modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeModalOnBackdrop(event)">
+            <div class="bg-white dark:bg-dark-eval-1 rounded-2xl p-8 max-w-md w-full mx-4" onclick="event.stopPropagation()">
                 <div class="text-center">
                     <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full mb-4">
                         <svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -356,6 +356,12 @@
             updateList();
             updateProgress();
             qrInput.focus();
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target === printModal) {
+                closeModal();
+            }
         }
     </script>
 </x-app-layout>
