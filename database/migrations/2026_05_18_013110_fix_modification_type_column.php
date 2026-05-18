@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'retail_stock')) {
-                $table->integer('retail_stock')->default(0)->after('at_distributor');
-            }
+        Schema::table('warranty_claims', function (Blueprint $table) {
+            $table->string('modification_type')->nullable()->change();
         });
     }
 
@@ -23,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('retail_stock');
+        Schema::table('warranty_claims', function (Blueprint $table) {
+            //
         });
     }
 };

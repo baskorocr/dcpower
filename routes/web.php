@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Users
     Route::middleware('can:manage-users')->group(function () {
-        Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show', 'destroy']);
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show']);
     });
 
     // Roles (Admin only)

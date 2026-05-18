@@ -27,9 +27,14 @@ class WarrantyClaim extends Model
         'replaced_at',
         'replacement_product_id',
         'motor_type',
+        'motor_year',
         'has_modification',
-        'modification_types',
+        'modification_type',
+        'modification_other',
         'whatsapp_number',
+        'address',
+        'city',
+        'province',
         'purchase_type',
         'purchase_date',
         'battery_issue_date'
@@ -42,7 +47,6 @@ class WarrantyClaim extends Model
         'resolved_at' => 'datetime',
         'replaced_at' => 'datetime',
         'has_modification' => 'boolean',
-        'modification_types' => 'array',
         'purchase_date' => 'date',
         'battery_issue_date' => 'date'
     ];

@@ -43,6 +43,24 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Alamat *</label>
+                    <textarea name="address" rows="2" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Alamat lengkap">{{ old('address') }}</textarea>
+                    @error('address')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Kota *</label>
+                    <input type="text" name="city" value="{{ old('city') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: Jakarta">
+                    @error('city')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Provinsi *</label>
+                    <input type="text" name="province" value="{{ old('province') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: DKI Jakarta">
+                    @error('province')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pembelian *</label>
                     <select name="purchase_type" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
                         <option value="">Pilih jenis pembelian</option>
@@ -77,7 +95,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description *</label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description * (minimal 10 kata)</label>
                     <textarea name="complaint_description" rows="4" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Describe the issue in detail...">{{ old('complaint_description') }}</textarea>
                     @error('complaint_description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
@@ -86,6 +104,12 @@
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tipe Motor *</label>
                     <input type="text" name="motor_type" value="{{ old('motor_type') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: Honda Beat, Yamaha Mio, dll">
                     @error('motor_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tahun Motor *</label>
+                    <input type="number" name="motor_year" value="{{ old('motor_year') }}" required min="1900" max="{{ date('Y') }}" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: 2020">
+                    @error('motor_year')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
@@ -107,23 +131,33 @@
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Jenis Modifikasi</label>
                     <div class="space-y-2">
                         <label class="flex items-center">
-                            <input type="checkbox" name="modification_types[]" value="boreup" {{ in_array('boreup', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <input type="radio" name="modification_type" value="boreup" {{ old('modification_type') == 'boreup' ? 'checked' : '' }} onchange="toggleOtherModification()" class="mr-2">
                             <span>Boreup</span>
                         </label>
                         <label class="flex items-center">
-                            <input type="checkbox" name="modification_types[]" value="ganti_kiprok" {{ in_array('ganti_kiprok', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <input type="radio" name="modification_type" value="ganti_kiprok" {{ old('modification_type') == 'ganti_kiprok' ? 'checked' : '' }} onchange="toggleOtherModification()" class="mr-2">
                             <span>Ganti Kiprok</span>
                         </label>
                         <label class="flex items-center">
-                            <input type="checkbox" name="modification_types[]" value="ganti_spull" {{ in_array('ganti_spull', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <input type="radio" name="modification_type" value="ganti_spull" {{ old('modification_type') == 'ganti_spull' ? 'checked' : '' }} onchange="toggleOtherModification()" class="mr-2">
                             <span>Ganti Spull</span>
                         </label>
                         <label class="flex items-center">
-                            <input type="checkbox" name="modification_types[]" value="ganti_coil" {{ in_array('ganti_coil', old('modification_types', [])) ? 'checked' : '' }} class="mr-2">
+                            <input type="radio" name="modification_type" value="ganti_coil" {{ old('modification_type') == 'ganti_coil' ? 'checked' : '' }} onchange="toggleOtherModification()" class="mr-2">
                             <span>Ganti Coil</span>
                         </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="modification_type" value="other" {{ old('modification_type') == 'other' ? 'checked' : '' }} onchange="toggleOtherModification()" class="mr-2">
+                            <span>Other</span>
+                        </label>
                     </div>
-                    @error('modification_types')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error('modification_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    
+                    <div id="other-modification" class="hidden mt-3">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Sebutkan Modifikasi Lainnya</label>
+                        <input type="text" name="modification_other" value="{{ old('modification_other') }}" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Jelaskan modifikasi lainnya">
+                        @error('modification_other')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
                 </div>
 
                 <div>
@@ -157,7 +191,19 @@
                         modificationTypes.classList.remove('hidden');
                     } else {
                         modificationTypes.classList.add('hidden');
-                        document.querySelectorAll('input[name="modification_types[]"]').forEach(cb => cb.checked = false);
+                        document.querySelectorAll('input[name="modification_type"]').forEach(rb => rb.checked = false);
+                        document.getElementById('other-modification').classList.add('hidden');
+                    }
+                }
+                
+                function toggleOtherModification() {
+                    const selectedModification = document.querySelector('input[name="modification_type"]:checked');
+                    const otherModificationDiv = document.getElementById('other-modification');
+                    
+                    if (selectedModification && selectedModification.value === 'other') {
+                        otherModificationDiv.classList.remove('hidden');
+                    } else {
+                        otherModificationDiv.classList.add('hidden');
                     }
                 }
                 
@@ -245,6 +291,7 @@
                 
                 document.addEventListener('DOMContentLoaded', function() {
                     toggleModifications();
+                    toggleOtherModification();
                 });
                 
                 function startScanner() {

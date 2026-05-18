@@ -9,9 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('warranty_claims', function (Blueprint $table) {
-            $table->foreignId('replaced_by')->nullable()->after('handled_by')->constrained('users');
-            $table->foreignId('replacement_product_id')->nullable()->after('replaced_by')->constrained('products');
-            $table->timestamp('replaced_at')->nullable()->after('resolved_at');
+            if (!Schema::hasColumn('warranty_claims', 'replaced_by')) {
+                $table->foreignId('replaced_by')->nullable()->after('handled_by')->constrained('users');
+            }
+            if (!Schema::hasColumn('warranty_claims', 'replacement_product_id')) {
+                $table->foreignId('replacement_product_id')->nullable()->after('replaced_by')->constrained('products');
+            }
+            if (!Schema::hasColumn('warranty_claims', 'replaced_at')) {
+                $table->timestamp('replaced_at')->nullable()->after('resolved_at');
+            }
         });
     }
 

@@ -79,6 +79,9 @@ class WarrantyClaimController extends Controller
             ]);
         }
         
+        // Get warranty activation date from trace logs
+        $activationLog = $product->traceLogs()->where('event_type', 'warranty_activation')->first();
+        
         return response()->json([
             'status' => 'genuine',
             'message' => 'Product Original Genuine - Produk asli dan terverifikasi',
@@ -86,7 +89,7 @@ class WarrantyClaimController extends Controller
             'product_status' => $product->status,
             'product' => [
                 'name' => $product->project->name ?? 'N/A',
-                'activated_at' => $product->warranty_activated_at?->format('d/m/Y'),
+                'activated_at' => $activationLog ? $activationLog->scanned_at->format('d/m/Y') : 'Belum diaktivasi',
                 'expires_at' => $product->warranty_expires_at?->format('d/m/Y')
             ]
         ]);
@@ -97,13 +100,21 @@ class WarrantyClaimController extends Controller
         $validated = $request->validate([
             'serial_number' => 'required|string',
             'complaint_type' => 'required|in:defect,damage,malfunction,other',
-            'complaint_description' => 'required|string',
+            'complaint_description' => ['required', 'string', function ($attribute, $value, $fail) {
+                if (str_word_count($value) < 10) {
+                    $fail('Deskripsi harus minimal 10 kata.');
+                }
+            }],
             'photo_evidence' => 'required|image|mimes:jpeg,jpg,png|max:5120|dimensions:min_width=400,min_height=400',
             'motor_type' => 'required|string|max:255',
+            'motor_year' => 'required|integer|min:1900|max:' . date('Y'),
             'has_modification' => 'required|boolean',
-            'modification_types' => 'nullable|array',
-            'modification_types.*' => 'in:boreup,ganti_kiprok,ganti_spull,ganti_coil',
+            'modification_type' => 'nullable|required_if:has_modification,1|in:boreup,ganti_kiprok,ganti_spull,ganti_coil,other',
+            'modification_other' => 'nullable|required_if:modification_type,other|string|max:255',
             'whatsapp_number' => 'required|string|max:20',
+            'address' => 'required|string',
+            'city' => 'required|string|max:255',
+            'province' => 'required|string|max:255',
             'purchase_type' => 'required|in:online,offline',
             'purchase_date' => 'required|date|before_or_equal:today',
             'battery_issue_date' => 'required|date|after_or_equal:purchase_date|before_or_equal:today',
@@ -147,9 +158,14 @@ class WarrantyClaimController extends Controller
             'status' => 'pending',
             'submitted_at' => now(),
             'motor_type' => $validated['motor_type'],
+            'motor_year' => $validated['motor_year'],
             'has_modification' => $validated['has_modification'],
-            'modification_types' => $validated['has_modification'] ? $validated['modification_types'] : null,
+            'modification_type' => $validated['has_modification'] ? $validated['modification_type'] : null,
+            'modification_other' => $validated['modification_type'] === 'other' ? $validated['modification_other'] : null,
             'whatsapp_number' => $validated['whatsapp_number'],
+            'address' => $validated['address'],
+            'city' => $validated['city'],
+            'province' => $validated['province'],
             'purchase_type' => $validated['purchase_type'],
             'purchase_date' => $validated['purchase_date'],
             'battery_issue_date' => $validated['battery_issue_date'],
