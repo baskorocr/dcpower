@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\WarrantyClaim;
+use App\Exports\ClaimHistoryExport;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ClaimHistoryController extends Controller
 {
     public function index(Request $request)
     {
-        $query = WarrantyClaim::with(['product.project', 'claimedBy', 'approver']);
+        $query = WarrantyClaim::with(['product.project', 'claimedBy', 'approver'])
+            ->whereHas('product'); // Only show claims with existing products
 
         // Filter by status
         if ($request->filled('status')) {
@@ -39,5 +42,10 @@ class ClaimHistoryController extends Controller
         $claims = $query->latest('submitted_at')->paginate(20);
 
         return view('admin.claim-history.index', compact('claims'));
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(new ClaimHistoryExport($request), 'claim-history-' . now()->format('Y-m-d') . '.xlsx');
     }
 }

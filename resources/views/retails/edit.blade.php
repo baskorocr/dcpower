@@ -3,9 +3,6 @@
         <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Edit Retail</h2>
     </x-slot>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     @if(session('success'))
     <div class="mb-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-200 rounded-lg">
         {{ session('success') }}
@@ -75,16 +72,6 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Latitude</label>
-                    <input type="text" id="latitude" name="latitude" value="{{ old('latitude', $retail->latitude) }}" readonly class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Longitude</label>
-                    <input type="text" id="longitude" name="longitude" value="{{ old('longitude', $retail->longitude) }}" readonly class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700">
-                </div>
-
-                <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status *</label>
                     <select name="status" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200">
                         <option value="active" {{ $retail->status == 'active' ? 'selected' : '' }}>Active</option>
@@ -97,11 +84,6 @@
                     <input type="text" name="pin" value="{{ old('pin', $retail->pin) }}" required maxlength="6" pattern="[0-9]{6}" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-gray-200" placeholder="123456">
                     @error('pin')<span class="text-red-500 text-xs">{{ $message }}</span>@enderror
                 </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location (Click on map to set)</label>
-                    <div id="map" class="rounded-lg border border-gray-300 dark:border-gray-600" style="height: 400px; width: 100%; min-height: 300px;"></div>
-                </div>
             </div>
 
             <div class="mt-6 flex gap-3">
@@ -110,34 +92,4 @@
             </div>
         </form>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const lat = {{ $retail->latitude ?? -6.2088 }};
-            const lng = {{ $retail->longitude ?? 106.8456 }};
-            
-            const map = L.map('map').setView([lat, lng], 13);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-            
-            setTimeout(() => map.invalidateSize(), 100);
-            
-            let marker = L.marker([lat, lng], {draggable: true}).addTo(map);
-            
-            marker.on('dragend', function(e) {
-                const pos = marker.getLatLng();
-                document.getElementById('latitude').value = pos.lat.toFixed(8);
-                document.getElementById('longitude').value = pos.lng.toFixed(8);
-            });
-            
-            map.on('click', function(e) {
-                marker.setLatLng(e.latlng);
-                document.getElementById('latitude').value = e.latlng.lat.toFixed(8);
-                document.getElementById('longitude').value = e.latlng.lng.toFixed(8);
-            });
-        });
-    </script>
 </x-app-layout>

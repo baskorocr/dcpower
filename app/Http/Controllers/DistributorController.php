@@ -10,18 +10,41 @@ use Illuminate\Support\Facades\Hash;
 
 class DistributorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        $isAdmin = $user->hasRole('admin');
+        
         $query = Distributor::with(['project', 'user']);
         
-        if (!$user->hasRole('admin')) {
+        if (!$isAdmin) {
             $projectIds = \DB::table('project_users')->where('user_id', $user->id)->pluck('project_id');
             $query->whereIn('project_id', $projectIds);
+        } else {
+            if ($request->filled('project_id')) {
+                $query->where('project_id', $request->project_id);
+            }
+        }
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
         
         $distributors = $query->latest()->paginate(20);
-        return view('distributors.index', compact('distributors'));
+        $projects = $isAdmin ? Project::all() : collect();
+        
+        return view('distributors.index', compact('distributors', 'projects', 'isAdmin'));
     }
 
     public function create()
@@ -89,7 +112,7 @@ class DistributorController extends Controller
 
     public function show(Distributor $distributor)
     {
-        $distributor->load(['project', 'user', 'stockMovements', 'sales']);
+        $distributor->load(['project', 'user', 'stockMovements']);
         $stockCount = $distributor->stockMovements()
             ->selectRaw('SUM(CASE WHEN type = "in" THEN quantity ELSE -quantity END) as total')
             ->value('total') ?? 0;
@@ -147,7 +170,32 @@ class DistributorController extends Controller
 
     public function destroy(Distributor $distributor)
     {
+        $user = auth()->user();
+        
+        // Only PM, marketing, and admin can delete distributors
+        if (!$user->hasAnyRole(['PM', 'Marketing', 'admin'])) {
+            abort(403);
+        }
+        
         $distributor->delete();
         return redirect()->route('distributors.index')->with('success', 'Distributor deleted successfully');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $user = auth()->user();
+        
+        if (!$user->hasAnyRole(['PM', 'Marketing', 'admin'])) {
+            abort(403);
+        }
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:distributors,id'
+        ]);
+
+        Distributor::whereIn('id', $request->ids)->delete();
+
+        return redirect()->route('distributors.index')->with('success', count($request->ids) . ' distributors deleted successfully');
     }
 }

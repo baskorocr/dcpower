@@ -88,6 +88,7 @@ class DashboardController extends Controller
     private function buyerDashboard()
     {
         $recentClaims = WarrantyClaim::with('product')
+            ->whereHas('product') // Only show claims with existing products
             ->where('claimed_by_user_id', auth()->id())
             ->latest()
             ->take(5)

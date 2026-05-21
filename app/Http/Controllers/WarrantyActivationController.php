@@ -98,7 +98,7 @@ class WarrantyActivationController extends Controller
         }
 
         $project = $product->project;
-        $warrantyMonths = $project->warranty_period ?? 12;
+        $warrantyMonths = $project->warranty_duration ?? 12;
         $retail = Retail::find(session('retail_activation_id'));
 
         // Update product: reduce retail stock, set warranty expiry, change status to sold

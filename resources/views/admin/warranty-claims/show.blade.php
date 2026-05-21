@@ -35,6 +35,10 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">Product Name</p>
                     <p class="font-semibold">{{ $warrantyClaim->product->project->name ?? 'N/A' }}</p>
                 </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Variant</p>
+                    <p class="font-semibold">{{ $warrantyClaim->product->variant ?? '-' }}</p>
+                </div>
                 @php
                     $latestRetailMovement = $warrantyClaim->product->stockMovements
                         ->where('retail_id', '!=', null)
@@ -112,12 +116,21 @@
                 <p class="p-3 bg-gray-50 dark:bg-dark-eval-2 rounded-lg">{{ $warrantyClaim->complaint_description }}</p>
             </div>
 
-            @if($warrantyClaim->photo_evidence)
-            <div class="mb-4">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Photo Evidence</p>
-                <img src="{{ asset('storage/' . $warrantyClaim->photo_evidence) }}" alt="Evidence" class="w-full max-w-xs md:max-w-sm rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition" onclick="openImageModal(this.src)">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                @if($warrantyClaim->photo_evidence)
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Photo Seal</p>
+                    <img src="{{ asset('storage/' . $warrantyClaim->photo_evidence) }}" alt="Seal" class="w-full rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition" onclick="openImageModal(this.src)">
+                </div>
+                @endif
+
+                @if($warrantyClaim->photo_damage)
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Photo Damage</p>
+                    <img src="{{ asset('storage/' . $warrantyClaim->photo_damage) }}" alt="Damage" class="w-full rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition" onclick="openImageModal(this.src)">
+                </div>
+                @endif
             </div>
-            @endif
 
             <!-- Image Modal -->
             <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">

@@ -411,12 +411,6 @@
                         </button>
                     </form>
                 </div>
-
-                <!-- Retail Map -->
-                <div class="bg-white rounded-2xl shadow-xl p-8">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Our Retail Locations</h3>
-                    <div id="retailMap" style="height: 450px; width: 100%;" class="rounded-lg"></div>
-                </div>
             </div>
         </div>
     </section>
@@ -516,38 +510,6 @@
         }, observerOptions);
 
         document.querySelectorAll('section > div').forEach(el => observer.observe(el));
-    </script>
-
-    <!-- Leaflet Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const retailMap = L.map('retailMap').setView([-2.5489, 118.0149], 5);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(retailMap);
-
-        fetch('/api/retails/locations')
-            .then(response => response.json())
-            .then(retails => {
-                const markers = [];
-                
-                retails.forEach(retail => {
-                    if (retail.latitude && retail.longitude) {
-                        const marker = L.marker([retail.latitude, retail.longitude])
-                            .bindPopup(`<b>${retail.name}</b><br>${retail.city || ''}, ${retail.province || ''}`)
-                            .addTo(retailMap);
-                        markers.push(marker);
-                    }
-                });
-                
-                // Fokuskan map ke area yang dekat dengan marker
-                if (markers.length > 0) {
-                    const group = L.featureGroup(markers);
-                    retailMap.fitBounds(group.getBounds().pad(0.1));
-                }
-            });
     </script>
 </body>
 </html>

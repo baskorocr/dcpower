@@ -48,13 +48,59 @@ class User extends Authenticatable
         return $projects->unique('id');
     }
 
-    public function sales()
-    {
-        return $this->hasMany(Sale::class, 'buyer_user_id');
-    }
-
     public function warrantyClaims()
     {
         return $this->hasMany(WarrantyClaim::class, 'claimed_by_user_id');
+    }
+
+    public function handledWarrantyClaims()
+    {
+        return $this->hasMany(WarrantyClaim::class, 'handled_by');
+    }
+
+    public function replacedWarrantyClaims()
+    {
+        return $this->hasMany(WarrantyClaim::class, 'replaced_by');
+    }
+
+    public function claimHistories()
+    {
+        return $this->hasMany(ClaimHistory::class, 'actor_user_id');
+    }
+
+    public function productTraceLogs()
+    {
+        return $this->hasMany(ProductTraceLog::class, 'scanned_by');
+    }
+
+    public function createdProjects()
+    {
+        return $this->hasMany(Project::class, 'created_by_user_id');
+    }
+
+    public function createdProducts()
+    {
+        return $this->hasMany(Product::class, 'created_by');
+    }
+
+    public function createdStandardPackings()
+    {
+        return $this->hasMany(StandardPacking::class, 'created_by');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            $user->warrantyClaims()->delete();
+            $user->handledWarrantyClaims()->update(['handled_by' => null]);
+            $user->replacedWarrantyClaims()->update(['replaced_by' => null]);
+            $user->claimHistories()->delete();
+            $user->productTraceLogs()->delete();
+            $user->createdProducts()->delete();
+            $user->createdStandardPackings()->delete();
+            $user->createdProjects()->delete();
+            $user->projectUsers()->delete();
+            $user->distributor()->delete();
+        });
     }
 }

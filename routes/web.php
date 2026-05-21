@@ -43,6 +43,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/retail-stocks', [\App\Http\Controllers\DashboardController::class, 'retailStocks'])->name('dashboard.retail-stocks');
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
+    // Reports
+    Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/distributor/{distributor}', [\App\Http\Controllers\ReportController::class, 'distributor'])->name('reports.distributor');
+    Route::get('/reports/retail/{retail}', [\App\Http\Controllers\ReportController::class, 'retail'])->name('reports.retail');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -59,6 +64,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->name('roles.update');
         Route::delete('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('roles.destroy');
         Route::post('permissions', [\App\Http\Controllers\Admin\RoleController::class, 'storePermission'])->name('permissions.store');
+        Route::delete('permissions/{permission}', [\App\Http\Controllers\Admin\RoleController::class, 'destroyPermission'])->name('permissions.destroy');
+    });
+
+    // Product Audit Logs
+    Route::middleware('permission:view-product-audit-logs')->group(function () {
+        Route::get('product-audit-logs', [\App\Http\Controllers\Admin\ProductAuditLogController::class, 'index'])->name('product-audit-logs.index');
     });
 
     // Projects
@@ -69,29 +80,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Distributors
     Route::middleware('permission:manage-distributors')->group(function () {
         Route::resource('distributors', \App\Http\Controllers\DistributorController::class);
+        Route::post('distributors/bulk-delete', [\App\Http\Controllers\DistributorController::class, 'bulkDelete'])->name('distributors.bulk-delete');
     });
 
     // Retails
     Route::middleware('permission:manage-retails')->group(function () {
         Route::resource('retails', \App\Http\Controllers\RetailController::class);
+        Route::post('retails/bulk-delete', [\App\Http\Controllers\RetailController::class, 'bulkDelete'])->name('retails.bulk-delete');
     });
 
     // Products
     Route::middleware('permission:manage-products')->group(function () {
+        Route::get('products/switch', [\App\Http\Controllers\Admin\ProductController::class, 'switchForm'])->name('products.switch');
+        Route::post('products/switch', [\App\Http\Controllers\Admin\ProductController::class, 'switchSerial'])->name('products.switch.submit');
         Route::get('products/print', [\App\Http\Controllers\Admin\ProductController::class, 'print'])->name('products.print');
         Route::post('products/bulk-delete', [\App\Http\Controllers\Admin\ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
+        Route::post('products/{product}/repair-status', [\App\Http\Controllers\Admin\ProductController::class, 'updateRepairStatus'])->name('products.update-repair-status');
         Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     });
 
     // Standard Packings
     Route::middleware('permission:manage-products')->group(function () {
         Route::get('standard-packings', [\App\Http\Controllers\Admin\StandardPackingController::class, 'index'])->name('standard-packings.index');
+        Route::post('standard-packings/print-multiple', [\App\Http\Controllers\Admin\StandardPackingController::class, 'printMultiple'])->name('standard-packings.print-multiple');
         Route::get('standard-packings/{standardPacking}', [\App\Http\Controllers\Admin\StandardPackingController::class, 'show'])->name('standard-packings.show');
         Route::get('standard-packings/{standardPacking}/print', [\App\Http\Controllers\Admin\StandardPackingController::class, 'print'])->name('standard-packings.print');
     });
 
     // API for QR verification
     Route::get('/api/projects/verify-qr/{qrCode}', [\App\Http\Controllers\Admin\ProductController::class, 'verifyProjectQR']);
+    Route::get('/api/check-serial/{serial}', [\App\Http\Controllers\Admin\ProductController::class, 'checkSerial']);
 
     // QR Scan
     Route::middleware('permission:scan-qr')->group(function () {
@@ -109,6 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Warranty Claims
     Route::middleware('permission:view-claims|manage-claims')->group(function () {
         Route::post('warranty-claims/check-serial', [\App\Http\Controllers\Admin\WarrantyClaimController::class, 'checkSerial'])->name('warranty-claims.check-serial');
+        Route::delete('warranty-claims/{warrantyClaim}/cancel', [\App\Http\Controllers\Admin\WarrantyClaimController::class, 'cancel'])->name('warranty-claims.cancel');
         Route::resource('warranty-claims', \App\Http\Controllers\Admin\WarrantyClaimController::class);
     });
 
@@ -123,6 +142,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Claim History (Admin only)
     Route::middleware('permission:view-claim-history')->group(function () {
         Route::get('claim-history', [\App\Http\Controllers\Admin\ClaimHistoryController::class, 'index'])->name('claim-history.index');
+        Route::get('claim-history/export', [\App\Http\Controllers\Admin\ClaimHistoryController::class, 'export'])->name('claim-history.export');
     });
 
     // Contact Messages (Admin only)

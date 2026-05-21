@@ -16,8 +16,6 @@ class Retail extends Model
         'city',
         'province',
         'postal_code',
-        'latitude',
-        'longitude',
         'status',
         'pin',
     ];

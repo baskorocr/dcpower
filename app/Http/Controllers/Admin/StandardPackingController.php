@@ -79,6 +79,22 @@ class StandardPackingController extends Controller
 
     public function print(StandardPacking $standardPacking)
     {
+        if (!auth()->user()->hasAnyRole(['QA', 'admin'])) {
+            abort(403, 'Unauthorized. Only QA and Admin can print packing labels.');
+        }
+        
         return view('admin.standard-packings.print', compact('standardPacking'));
+    }
+
+    public function printMultiple(Request $request)
+    {
+        if (!auth()->user()->hasAnyRole(['QA', 'admin'])) {
+            abort(403, 'Unauthorized. Only QA and Admin can print packing labels.');
+        }
+
+        $ids = explode(',', $request->ids);
+        $standardPackings = StandardPacking::whereIn('id', $ids)->get();
+
+        return view('admin.standard-packings.print-multiple', compact('standardPackings'));
     }
 }

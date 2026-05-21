@@ -43,6 +43,26 @@
             font-weight: bold;
             margin-bottom: 2mm;
             text-align: center;
+            position: relative;
+            width: 100%;
+        }
+        .qc-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 15mm;
+            height: 15mm;
+            border-radius: 50%;
+            border: 2px solid black;
+            background-color: white;
+            color: black;
+            font-size: 7pt;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.2;
+            position: absolute;
+            right: 10mm;
+            top: -8mm;
         }
         .barcode {
             text-align: center;
@@ -59,7 +79,10 @@
     </div>
     <div class="project-name">{{ $standardPacking->project->name }}</div>
     <div class="packing-code">{{ $standardPacking->packing_code }}</div>
-    <div class="quantity">QTY: {{ $standardPacking->quantity }}</div>
+    <div class="quantity">
+        QTY: {{ $standardPacking->quantity }}
+        <span class="qc-badge">QC<br>PASSED</span>
+    </div>
     
     <script>
         window.onload = function() {

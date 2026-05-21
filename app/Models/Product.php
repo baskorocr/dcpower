@@ -10,8 +10,8 @@ class Product extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['project_id', 'standard_packing_id', 'created_by', 'serial_number', 'image_path', 'status', 'manufactured_at', 'warranty_expires_at', 'at_distributor', 'retail_stock'];
-    protected $casts = ['manufactured_at' => 'datetime', 'warranty_expires_at' => 'datetime'];
+    protected $fillable = ['project_id', 'standard_packing_id', 'created_by', 'serial_number', 'variant', 'image_path', 'status', 'manufactured_at', 'warranty_expires_at', 'at_distributor', 'retail_stock', 'can_repair', 'repair_distributor_id', 'repair_notes', 'repair_sent_at'];
+    protected $casts = ['manufactured_at' => 'datetime', 'warranty_expires_at' => 'datetime', 'repair_sent_at' => 'datetime', 'can_repair' => 'boolean'];
 
     protected static function boot()
     {
@@ -20,6 +20,11 @@ class Product extends Model
             if (!$product->serial_number) {
                 $product->serial_number = 'SN-' . strtoupper(Str::random(10));
             }
+        });
+        
+        static::deleting(function ($product) {
+            // Delete related warranty claims when product is deleted
+            $product->warrantyClaims()->delete();
         });
     }
 
@@ -61,5 +66,10 @@ class Product extends Model
     public function standardPacking()
     {
         return $this->belongsTo(StandardPacking::class);
+    }
+
+    public function repairDistributor()
+    {
+        return $this->belongsTo(Distributor::class, 'repair_distributor_id');
     }
 }

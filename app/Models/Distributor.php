@@ -9,7 +9,7 @@ class Distributor extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['project_id', 'user_id', 'code', 'name', 'address', 'city', 'province', 'phone', 'email', 'latitude', 'longitude', 'status'];
+    protected $fillable = ['project_id', 'user_id', 'code', 'name', 'address', 'city', 'province', 'phone', 'email', 'status'];
 
     public function project()
     {
@@ -24,11 +24,6 @@ class Distributor extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
-    }
-
-    public function sales()
-    {
-        return $this->hasMany(Sale::class);
     }
 
     public function retails()

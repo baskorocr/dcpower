@@ -8,21 +8,48 @@ use Illuminate\Http\Request;
 
 class RetailController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        $isAdmin = $user->hasRole('admin');
+        
+        $query = Retail::with('distributor.project');
         
         if ($user->hasRole('distributor')) {
             $distributor = Distributor::where('user_id', $user->id)->first();
-            $retails = $distributor ? Retail::where('distributor_id', $distributor->id)->with('distributor')->latest()->get() : collect([]);
-        } elseif ($user->hasRole('admin')) {
-            $retails = Retail::with('distributor')->latest()->get();
-        } else {
+            if ($distributor) {
+                $query->where('distributor_id', $distributor->id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } elseif (!$isAdmin) {
             $projectIds = $user->projects->pluck('id');
-            $retails = Retail::whereHas('distributor', fn($q) => $q->whereIn('project_id', $projectIds))->with('distributor')->latest()->get();
+            $query->whereHas('distributor', fn($q) => $q->whereIn('project_id', $projectIds));
         }
         
-        return view('retails.index', compact('retails'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('contact_person', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('project_id')) {
+            $query->whereHas('distributor', fn($q) => $q->where('project_id', $request->project_id));
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        $retails = $query->latest()->paginate(20);
+        $projects = $isAdmin ? \App\Models\Project::all() : collect();
+        
+        return view('retails.index', compact('retails', 'projects', 'isAdmin'));
     }
 
     public function create()
@@ -110,7 +137,37 @@ class RetailController extends Controller
 
     public function destroy(Retail $retail)
     {
+        $user = auth()->user();
+        
+        // Only distributor, PM, marketing, and admin can delete
+        if ($user->hasRole('distributor')) {
+            $distributor = Distributor::where('user_id', $user->id)->first();
+            if (!$distributor || $retail->distributor_id != $distributor->id) {
+                abort(403);
+            }
+        } elseif (!$user->hasAnyRole(['PM', 'Marketing', 'admin'])) {
+            abort(403);
+        }
+        
         $retail->delete();
         return redirect()->route('retails.index')->with('success', 'Retail deleted successfully');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $user = auth()->user();
+        
+        if (!$user->hasAnyRole(['PM', 'Marketing', 'admin'])) {
+            abort(403);
+        }
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:retails,id'
+        ]);
+
+        Retail::whereIn('id', $request->ids)->delete();
+
+        return redirect()->route('retails.index')->with('success', count($request->ids) . ' retails deleted successfully');
     }
 }

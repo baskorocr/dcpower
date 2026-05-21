@@ -31,7 +31,7 @@
                 <div class="p-4 bg-gray-50 dark:bg-dark-eval-2 rounded-lg">
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <p class="font-semibold text-gray-800 dark:text-gray-100">{{ $claim->product->name }}</p>
+                            <p class="font-semibold text-gray-800 dark:text-gray-100">{{ $claim->product?->project?->name ?? 'N/A' }}</p>
                             <p class="text-sm text-gray-600 dark:text-gray-400">{{ $claim->claim_number }}</p>
                         </div>
                         <span class="px-2 py-1 text-xs rounded-full 
@@ -43,9 +43,20 @@
                             {{ ucfirst(str_replace('_', ' ', $claim->status)) }}
                         </span>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600 dark:text-gray-400">{{ ucfirst($claim->complaint_type) }}</span>
-                        <span class="text-gray-600 dark:text-gray-400">{{ $claim->submitted_at->format('d M Y') }}</span>
+                    <div class="flex justify-between items-center text-sm">
+                        <div>
+                            <span class="text-gray-600 dark:text-gray-400">{{ ucfirst($claim->complaint_type) }}</span>
+                            <span class="text-gray-600 dark:text-gray-400 ml-2">{{ $claim->submitted_at->format('d M Y') }}</span>
+                        </div>
+                        @if($claim->status === 'pending')
+                        <form method="POST" action="{{ route('warranty-claims.cancel', $claim) }}" onsubmit="return confirm('Batalkan pengajuan klaim ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">
+                                Batalkan
+                            </button>
+                        </form>
+                        @endif
                     </div>
                 </div>
                 @empty

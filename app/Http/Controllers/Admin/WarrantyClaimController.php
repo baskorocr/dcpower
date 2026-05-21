@@ -9,17 +9,30 @@ use Illuminate\Http\Request;
 
 class WarrantyClaimController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = WarrantyClaim::with(['product', 'claimedBy']);
+        $query = WarrantyClaim::with(['product.project', 'product.standardPacking', 'claimedBy'])
+            ->whereHas('product'); // Only show claims with existing products
         
+        // Role-based filtering
         if (auth()->user()->hasRole('buyer')) {
             $query->where('claimed_by_user_id', auth()->id());
         } elseif (auth()->user()->hasRole('distributor')) {
             $query->where('distributor_id', auth()->user()->distributor->id);
+        } elseif (!auth()->user()->hasRole('admin')) {
+            // PM or other roles - filter by assigned projects
+            $projectIds = auth()->user()->projects->pluck('id');
+            $query->whereHas('product', function($q) use ($projectIds) {
+                $q->whereIn('project_id', $projectIds);
+            });
         }
         
-        $claims = $query->latest()->paginate(15);
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        $claims = $query->latest()->paginate(20)->withQueryString();
         
         return view('admin.warranty-claims.index', compact('claims'));
     }
@@ -106,6 +119,7 @@ class WarrantyClaimController extends Controller
                 }
             }],
             'photo_evidence' => 'required|image|mimes:jpeg,jpg,png|max:5120|dimensions:min_width=400,min_height=400',
+            'photo_damage' => 'required|image|mimes:jpeg,jpg,png|max:5120|dimensions:min_width=400,min_height=400',
             'motor_type' => 'required|string|max:255',
             'motor_year' => 'required|integer|min:1900|max:' . date('Y'),
             'has_modification' => 'required|boolean',
@@ -131,17 +145,15 @@ class WarrantyClaimController extends Controller
             return back()->withErrors(['serial_number' => 'Serial number not found, warranty has expired, product already used for claim replacement, or claim was rejected.'])->withInput();
         }
 
-        // Upload photo with strict validation
+        // Upload photo seal
         if ($request->hasFile('photo_evidence')) {
             $file = $request->file('photo_evidence');
             
-            // Additional MIME type check
             $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
             if (!in_array($file->getMimeType(), $allowedMimes)) {
                 return back()->withErrors(['photo_evidence' => 'Invalid file type. Only JPEG and PNG images are allowed.']);
             }
             
-            // Check if file is actually an image
             if (!@getimagesize($file->getRealPath())) {
                 return back()->withErrors(['photo_evidence' => 'File is not a valid image.']);
             }
@@ -149,19 +161,39 @@ class WarrantyClaimController extends Controller
             $photoPath = $file->store('warranty-claims', 'public');
         }
 
+        // Upload photo damage
+        if ($request->hasFile('photo_damage')) {
+            $file = $request->file('photo_damage');
+            
+            $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!in_array($file->getMimeType(), $allowedMimes)) {
+                return back()->withErrors(['photo_damage' => 'Invalid file type. Only JPEG and PNG images are allowed.']);
+            }
+            
+            if (!@getimagesize($file->getRealPath())) {
+                return back()->withErrors(['photo_damage' => 'File is not a valid image.']);
+            }
+            
+            $photoDamagePath = $file->store('warranty-claims', 'public');
+        }
+
+        $modificationType = $validated['has_modification'] ? ($validated['modification_type'] ?? null) : null;
+        $modificationOther = ($modificationType === 'other') ? ($validated['modification_other'] ?? null) : null;
+
         $claim = WarrantyClaim::create([
             'product_id' => $product->id,
             'complaint_type' => $validated['complaint_type'],
             'complaint_description' => $validated['complaint_description'],
             'claimed_by_user_id' => auth()->id(),
             'photo_evidence' => $photoPath ?? null,
+            'photo_damage' => $photoDamagePath ?? null,
             'status' => 'pending',
             'submitted_at' => now(),
             'motor_type' => $validated['motor_type'],
             'motor_year' => $validated['motor_year'],
             'has_modification' => $validated['has_modification'],
-            'modification_type' => $validated['has_modification'] ? $validated['modification_type'] : null,
-            'modification_other' => $validated['modification_type'] === 'other' ? $validated['modification_other'] : null,
+            'modification_type' => $modificationType,
+            'modification_other' => $modificationOther,
             'whatsapp_number' => $validated['whatsapp_number'],
             'address' => $validated['address'],
             'city' => $validated['city'],
@@ -217,5 +249,21 @@ class WarrantyClaimController extends Controller
         ]);
 
         return redirect()->route('warranty-claims.show', $warrantyClaim)->with('success', 'Claim updated');
+    }
+
+    public function cancel(WarrantyClaim $warrantyClaim)
+    {
+        // Only allow buyer to cancel their own pending claims
+        if ($warrantyClaim->claimed_by_user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        if ($warrantyClaim->status !== 'pending') {
+            return back()->with('error', 'Hanya klaim dengan status pending yang bisa dibatalkan');
+        }
+
+        $warrantyClaim->delete();
+
+        return redirect()->route('dashboard')->with('success', 'Pengajuan klaim berhasil dibatalkan');
     }
 }

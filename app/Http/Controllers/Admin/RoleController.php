@@ -63,4 +63,10 @@ class RoleController extends Controller
 
         return back()->with('success', 'Permission created successfully');
     }
+
+    public function destroyPermission(Permission $permission)
+    {
+        $permission->delete();
+        return back()->with('success', 'Permission deleted successfully');
+    }
 }

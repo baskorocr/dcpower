@@ -40,16 +40,19 @@
                     @endif
                 </div>
                 
-                <form method="POST" action="{{ route('roles.update', $role) }}">
+                <form method="POST" action="{{ route('roles.update', $role) }}" id="roleForm{{ $role->id }}">
                     @csrf
                     @method('PUT')
                     
                     <div class="space-y-2 mb-4">
                         @foreach($permissions as $permission)
-                        <label class="flex items-center text-sm">
-                            <input type="checkbox" name="permissions[]" value="{{ $permission->name }}" {{ $role->hasPermissionTo($permission->name) ? 'checked' : '' }} class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
-                            <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $permission->name }}</span>
-                        </label>
+                        <div class="flex items-center justify-between text-sm">
+                            <label class="flex items-center flex-1">
+                                <input type="checkbox" name="permissions[]" value="{{ $permission->name }}" {{ $role->hasPermissionTo($permission->name) ? 'checked' : '' }} class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
+                                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $permission->name }}</span>
+                            </label>
+                            <button type="button" onclick="deletePermission('{{ $permission->id }}')" class="ml-2 text-red-600 hover:text-red-800 text-xs">Delete</button>
+                        </div>
                         @endforeach
                     </div>
 
@@ -122,4 +125,20 @@
             </form>
         </div>
     </div>
+
+    <!-- Hidden form for deleting permissions -->
+    <form id="deletePermissionForm" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <script>
+        function deletePermission(permissionId) {
+            if (confirm('Delete this permission?')) {
+                const form = document.getElementById('deletePermissionForm');
+                form.action = '/permissions/' + permissionId;
+                form.submit();
+            }
+        }
+    </script>
 </x-app-layout>

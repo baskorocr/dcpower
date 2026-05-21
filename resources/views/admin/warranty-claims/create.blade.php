@@ -72,13 +72,13 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Pembelian *</label>
-                    <input type="date" name="purchase_date" value="{{ old('purchase_date') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                    <input type="date" name="purchase_date" value="{{ old('purchase_date') }}" max="{{ date('Y-m-d') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
                     @error('purchase_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Baterai Bermasalah *</label>
-                    <input type="date" name="battery_issue_date" value="{{ old('battery_issue_date') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                    <input type="date" name="battery_issue_date" value="{{ old('battery_issue_date') }}" max="{{ date('Y-m-d') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
                     @error('battery_issue_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
@@ -161,11 +161,19 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Photo Evidence *</label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Photo Seal *</label>
                     <input type="file" name="photo_evidence" accept="image/jpeg,image/jpg,image/png" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
-                    <p class="text-xs text-gray-500 mt-1">Upload clear photo of the defect/damage (JPEG/PNG only, max 5MB, min 400x400px)</p>
+                    <p class="text-xs text-gray-500 mt-1">Upload clear photo of the seal (JPEG/PNG only, max 5MB, min 400x400px)</p>
                     @error('photo_evidence')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     <div id="preview" class="mt-2"></div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Photo Damage *</label>
+                    <input type="file" name="photo_damage" accept="image/jpeg,image/jpg,image/png" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                    <p class="text-xs text-gray-500 mt-1">Upload clear photo of the defect/damage (JPEG/PNG only, max 5MB, min 400x400px)</p>
+                    @error('photo_damage')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    <div id="preview_damage" class="mt-2"></div>
                 </div>
 
                 <div class="flex gap-2">
@@ -331,6 +339,37 @@
                             preview.innerHTML = '<img src="' + e.target.result + '" class="max-w-xs rounded-lg border-2 border-emerald-200">';
                         }
                         reader.readAsDataURL(file);
+                    }
+                });
+
+                document.querySelector('input[name="photo_damage"]').addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    const preview = document.getElementById('preview_damage');
+                    
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.innerHTML = '<img src="' + e.target.result + '" class="max-w-xs rounded-lg border-2 border-emerald-200">';
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Date validation
+                const purchaseDate = document.querySelector('input[name="purchase_date"]');
+                const issueDate = document.querySelector('input[name="battery_issue_date"]');
+                
+                purchaseDate.addEventListener('change', function() {
+                    issueDate.min = this.value;
+                    if (issueDate.value && issueDate.value < this.value) {
+                        issueDate.value = '';
+                    }
+                });
+                
+                issueDate.addEventListener('change', function() {
+                    if (purchaseDate.value && this.value < purchaseDate.value) {
+                        alert('Tanggal baterai bermasalah tidak boleh lebih awal dari tanggal pembelian');
+                        this.value = '';
                     }
                 });
             </script>

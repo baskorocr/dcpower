@@ -13,7 +13,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['project', 'creator', 'standardPacking']);
+        $query = Product::with(['project', 'creator', 'standardPacking', 'repairDistributor']);
         
         // Get user's projects
         if (auth()->user()->hasRole('distributor')) {
@@ -56,9 +56,43 @@ class ProductController extends Controller
             $query->where('project_id', $request->project_id);
         }
         
-        $products = $query->latest()->paginate(20)->withQueryString();
+        // Filter by variant
+        if ($request->filled('variant')) {
+            $query->whereHas('standardPacking', function($q) use ($request) {
+                $q->where('variant', $request->variant);
+            });
+        }
         
-        return view('admin.products.index', compact('products', 'projects'));
+        // Get variants based on role and selected project
+        $variants = collect([]);
+        if ($request->filled('project_id')) {
+            $project = Project::find($request->project_id);
+            if ($project && $project->use_variants) {
+                $variants = collect($project->variants);
+            }
+        } elseif (!auth()->user()->hasRole('admin')) {
+            // For PM and Distributor, get variants from their projects
+            foreach ($projects as $project) {
+                if ($project->use_variants) {
+                    $variants = $variants->merge($project->variants);
+                }
+            }
+            $variants = $variants->unique();
+        } else {
+            // For admin, get all variants from all projects
+            $allProjects = Project::where('use_variants', 1)->get();
+            foreach ($allProjects as $project) {
+                if ($project->variants) {
+                    $variants = $variants->merge($project->variants);
+                }
+            }
+            $variants = $variants->unique();
+        }
+        
+        $perPage = $request->get('per_page', 20);
+        $products = $query->latest()->paginate($perPage)->withQueryString();
+        
+        return view('admin.products.index', compact('products', 'projects', 'variants'));
     }
 
     public function create()
@@ -107,6 +141,34 @@ class ProductController extends Controller
                 'code' => $project->code,
                 'standard_packing_quantity' => $project->standard_packing_quantity
             ]
+        ]);
+    }
+
+    public function checkSerial($serial)
+    {
+        $user = auth()->user();
+        $projectId = null;
+
+        // Get user's project
+        if (!$user->hasRole('admin')) {
+            $projectUser = \DB::table('project_users')
+                ->where('user_id', $user->id)
+                ->first();
+            $projectId = $projectUser ? $projectUser->project_id : null;
+        }
+
+        // Check if serial exists
+        $query = Product::where('serial_number', $serial);
+        
+        if ($projectId) {
+            $query->where('project_id', $projectId);
+        }
+        
+        $exists = $query->exists();
+
+        return response()->json([
+            'exists' => $exists,
+            'serial' => $serial
         ]);
     }
 
@@ -163,35 +225,44 @@ class ProductController extends Controller
         }
 
         foreach ($serialNumbers as $serialNumber) {
-            // Check if serial number already exists in this project
-            $exists = Product::where('serial_number', $serialNumber)
-                ->where('project_id', $projectId)
-                ->exists();
-            
-            if ($exists) {
-                continue; // Skip duplicate
+            try {
+                // Check if serial number already exists in this project
+                $exists = Product::where('serial_number', $serialNumber)
+                    ->where('project_id', $projectId)
+                    ->exists();
+                
+                if ($exists) {
+                    continue; // Skip duplicate
+                }
+
+                $product = Product::create([
+                    'project_id' => $projectId,
+                    'standard_packing_id' => $standardPacking ? $standardPacking->id : null,
+                    'serial_number' => $serialNumber,
+                    'variant' => $variant,
+                    'created_by' => auth()->id(),
+                    'manufactured_at' => now(),
+                    'status' => 'manufactured',
+                ]);
+
+                $product->traceLogs()->create([
+                    'user_id' => auth()->id(),
+                    'scanned_by' => auth()->id(),
+                    'event_type' => 'manufactured',
+                    'action' => 'manufactured',
+                    'location' => 'Factory',
+                    'notes' => $standardPacking ? 'Product manufactured - Packing: ' . $standardPacking->packing_code : 'Product manufactured',
+                    'scanned_at' => now(),
+                ]);
+
+                $createdProducts[] = $product;
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Skip if duplicate entry error
+                if ($e->getCode() == 23000) {
+                    continue;
+                }
+                throw $e;
             }
-
-            $product = Product::create([
-                'project_id' => $projectId,
-                'standard_packing_id' => $standardPacking ? $standardPacking->id : null,
-                'serial_number' => $serialNumber,
-                'created_by' => auth()->id(),
-                'manufactured_at' => now(),
-                'status' => 'manufactured',
-            ]);
-
-            $product->traceLogs()->create([
-                'user_id' => auth()->id(),
-                'scanned_by' => auth()->id(),
-                'event_type' => 'manufactured',
-                'action' => 'manufactured',
-                'location' => 'Factory',
-                'notes' => $standardPacking ? 'Product manufactured - Packing: ' . $standardPacking->packing_code : 'Product manufactured',
-                'scanned_at' => now(),
-            ]);
-
-            $createdProducts[] = $product;
         }
 
         $response = [
@@ -261,6 +332,14 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        \App\Models\ProductAuditLog::create([
+            'product_id' => $product->id,
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'old_values' => $product->only(['serial_number', 'status', 'variant']),
+            'ip_address' => request()->ip(),
+        ]);
+
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Product deleted successfully');
     }
@@ -283,5 +362,90 @@ class ProductController extends Controller
         $products = Product::with('project')->whereIn('id', $ids)->get();
         
         return view('admin.products.print', compact('products'));
+    }
+
+    public function switchForm()
+    {
+        return view('admin.products.switch');
+    }
+
+    public function switchSerial(Request $request)
+    {
+        $request->validate([
+            'old_serial' => 'required|string',
+            'new_serial' => 'required|string',
+        ]);
+
+        $oldProduct = Product::where('serial_number', $request->old_serial)->first();
+        
+        if (!$oldProduct) {
+            return back()->with('error', 'Old serial number not found!')->withInput();
+        }
+
+        $newExists = Product::where('serial_number', $request->new_serial)->exists();
+        
+        if ($newExists) {
+            return back()->with('error', 'New serial number already exists!')->withInput();
+        }
+
+        // Audit log
+        \App\Models\ProductAuditLog::create([
+            'product_id' => $oldProduct->id,
+            'user_id' => auth()->id(),
+            'action' => 'serial_switched',
+            'old_values' => ['serial_number' => $request->old_serial],
+            'new_values' => ['serial_number' => $request->new_serial],
+            'ip_address' => request()->ip(),
+        ]);
+
+        // Update serial number
+        $oldProduct->serial_number = $request->new_serial;
+        $oldProduct->save();
+
+        // Log the switch
+        $oldProduct->traceLogs()->create([
+            'user_id' => auth()->id(),
+            'scanned_by' => auth()->id(),
+            'event_type' => 'serial_switched',
+            'action' => 'serial_switched',
+            'location' => 'Factory',
+            'notes' => "Serial number switched from {$request->old_serial} to {$request->new_serial}",
+            'scanned_at' => now(),
+        ]);
+
+        return redirect()->route('products.switch')->with('success', "Serial number switched successfully from {$request->old_serial} to {$request->new_serial}");
+    }
+
+    public function updateRepairStatus(Request $request, Product $product)
+    {
+        $request->validate([
+            'can_repair' => 'required|boolean',
+            'repair_distributor_id' => 'required_if:can_repair,1|nullable|exists:distributors,id',
+        ]);
+
+        $product->update([
+            'can_repair' => $request->can_repair,
+            'repair_distributor_id' => $request->can_repair ? $request->repair_distributor_id : null,
+            'repair_sent_at' => $request->can_repair ? now() : null,
+            'status' => $request->can_repair ? 'in_distributor' : 'warranty_expired',
+        ]);
+
+        // Log the repair status change
+        $product->traceLogs()->create([
+            'user_id' => auth()->id(),
+            'scanned_by' => auth()->id(),
+            'event_type' => 'repair_status_updated',
+            'action' => 'repair_status_updated',
+            'location' => 'Admin',
+            'notes' => $request->can_repair 
+                ? "Product sent for repair to distributor: " . $product->repairDistributor->name 
+                : "Product marked as cannot be repaired",
+            'scanned_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Repair status updated successfully!'
+        ]);
     }
 }

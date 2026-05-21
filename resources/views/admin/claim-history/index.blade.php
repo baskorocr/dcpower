@@ -1,6 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Claim History</h2>
+        <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Claim History</h2>
+            <a href="{{ route('claim-history.export', request()->all()) }}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
+                Download Excel
+            </a>
+        </div>
     </x-slot>
 
     <div class="space-y-4">
@@ -37,6 +42,7 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">Claim Number</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">Serial Number</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">Product</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">Variant</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">Type</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">Status</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300">Submitted</th>
@@ -48,8 +54,9 @@
                         @forelse($claims as $claim)
                         <tr class="hover:bg-gray-50 dark:hover:bg-dark-eval-2">
                             <td class="px-4 py-3 text-sm font-medium">{{ $claim->claim_number }}</td>
-                            <td class="px-4 py-3 text-sm">{{ $claim->product->serial_number }}</td>
-                            <td class="px-4 py-3 text-sm">{{ $claim->product->project->name ?? 'N/A' }}</td>
+                            <td class="px-4 py-3 text-sm">{{ $claim->product?->serial_number ?? 'N/A' }}</td>
+                            <td class="px-4 py-3 text-sm">{{ $claim->product?->project?->name ?? 'N/A' }}</td>
+                            <td class="px-4 py-3 text-sm">{{ $claim->product?->variant ?? '-' }}</td>
                             <td class="px-4 py-3 text-sm">
                                 <span class="capitalize">{{ $claim->complaint_type }}</span>
                             </td>
@@ -74,7 +81,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">No claims found</td>
+                            <td colspan="9" class="px-4 py-8 text-center text-gray-500">No claims found</td>
                         </tr>
                         @endforelse
                     </tbody>

@@ -9,18 +9,32 @@ use Illuminate\Http\Request;
 
 class DistributorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $projectId = auth()->user()->hasRole('Admin') 
-            ? request('project_id') 
-            : auth()->user()->projectUsers()->first()?->project_id;
+        $isAdmin = auth()->user()->hasRole('Admin');
+        $userProjectId = auth()->user()->projectUsers()->first()?->project_id;
+        
+        $projectId = $isAdmin ? $request->get('project_id') : $userProjectId;
 
         $distributors = Distributor::with(['project', 'user'])
             ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+            ->when($request->filled('search'), function($q) use ($request) {
+                $search = $request->search;
+                $q->where(function($query) use ($search) {
+                    $query->where('code', 'like', "%{$search}%")
+                          ->orWhere('name', 'like', "%{$search}%")
+                          ->orWhere('city', 'like', "%{$search}%")
+                          ->orWhere('phone', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
             ->latest()
             ->paginate(10);
 
-        return view('admin.distributors.index', compact('distributors'));
+        $projects = $isAdmin ? \App\Models\Project::all() : collect();
+
+        return view('admin.distributors.index', compact('distributors', 'projects', 'isAdmin'));
     }
 
     public function create()
