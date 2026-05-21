@@ -65,5 +65,48 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Prevent double click on all buttons and forms
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle form submissions
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.6';
+                        submitBtn.style.cursor = 'not-allowed';
+                        
+                        // Re-enable after 3 seconds as fallback
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.style.opacity = '';
+                            submitBtn.style.cursor = '';
+                        }, 3000);
+                    }
+                });
+            });
+
+            // Handle button clicks with data-loading attribute
+            document.querySelectorAll('button[data-loading], a[data-loading]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (this.disabled) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    this.disabled = true;
+                    this.style.opacity = '0.6';
+                    this.style.cursor = 'not-allowed';
+                    
+                    setTimeout(() => {
+                        this.disabled = false;
+                        this.style.opacity = '';
+                        this.style.cursor = '';
+                    }, 3000);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

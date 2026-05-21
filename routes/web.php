@@ -149,6 +149,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('permission:manage-contact-messages')->group(function () {
         Route::get('contact-messages', [\App\Http\Controllers\Admin\ContactMessageAdminController::class, 'index'])->name('contact-messages.index');
         Route::get('contact-messages/{message}', [\App\Http\Controllers\Admin\ContactMessageAdminController::class, 'show'])->name('contact-messages.show');
+        Route::post('contact-messages/{message}/status', [\App\Http\Controllers\Admin\ContactMessageAdminController::class, 'updateStatus'])->name('contact-messages.update-status');
         Route::delete('contact-messages/{message}', [\App\Http\Controllers\Admin\ContactMessageAdminController::class, 'destroy'])->name('contact-messages.destroy');
     });
 });

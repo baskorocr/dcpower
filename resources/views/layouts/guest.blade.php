@@ -72,5 +72,28 @@
             </x-button>
         </div>
     </div>
+
+    <script>
+        // Prevent double click on all buttons and forms
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle form submissions
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.6';
+                        submitBtn.style.cursor = 'not-allowed';
+                        
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.style.opacity = '';
+                            submitBtn.style.cursor = '';
+                        }, 3000);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

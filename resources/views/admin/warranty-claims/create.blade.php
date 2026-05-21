@@ -265,6 +265,19 @@
                                 '<span class="font-semibold">Product: </span>' + data.product.name + '<br>' +
                                 '<span class="font-semibold">Activated: </span>' + data.product.activated_at + '<br>' +
                                 '<span class="font-semibold">Expires: </span>' + data.product.expires_at;
+                            
+                            // Auto-fill purchase date with activation date
+                            const purchaseDateInput = document.querySelector('input[name="purchase_date"]');
+                            if (data.product.activated_at) {
+                                // Convert DD/MM/YYYY to YYYY-MM-DD
+                                const parts = data.product.activated_at.split('/');
+                                if (parts.length === 3) {
+                                    const formattedDate = parts[2] + '-' + parts[1] + '-' + parts[0];
+                                    purchaseDateInput.value = formattedDate;
+                                    purchaseDateInput.readOnly = true;
+                                    purchaseDateInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                                }
+                            }
                         }
                     })
                     .catch(error => {
@@ -272,14 +285,26 @@
                     });
                 }
                 
+                let typingTimer;
+                const typingDelay = 800; // 800ms after user stops typing
+
+                document.getElementById('serial_number').addEventListener('input', function() {
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(() => {
+                        checkSerialNumber(this.value);
+                    }, typingDelay);
+                });
+
                 document.getElementById('serial_number').addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
+                        clearTimeout(typingTimer);
                         checkSerialNumber(this.value);
                     }
                 });
                 
                 document.getElementById('serial_number').addEventListener('blur', function() {
+                    clearTimeout(typingTimer);
                     checkSerialNumber(this.value);
                 });
                 
