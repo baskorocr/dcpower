@@ -24,6 +24,24 @@ class ReportController extends Controller
         $projectIds = $this->getProjectIds($user);
         $projects = Project::whereIn('id', $projectIds)->get();
         
+        // Get variants for filter - filter by project if selected
+        $variantsQuery = \App\Models\StandardPacking::whereHas('products', function($q) use ($projectIds, $request) {
+            if ($request->filled('project_id')) {
+                $q->where('project_id', $request->project_id);
+            }
+            $q->whereHas('stockMovements', function($sq) use ($projectIds, $request) {
+                $sq->whereHas('distributor', function($dq) use ($projectIds, $request) {
+                    if ($request->filled('project_id')) {
+                        $dq->where('project_id', $request->project_id);
+                    } else {
+                        $dq->whereIn('project_id', $projectIds);
+                    }
+                });
+            });
+        })->select('variant')->groupBy('variant')->orderBy('variant');
+        
+        $variants = $variantsQuery->get();
+        
         $query = Distributor::with(['project'])
             ->whereIn('project_id', $projectIds);
         
@@ -53,6 +71,16 @@ class ReportController extends Controller
             
             $productIds = $productQuery->pluck('product_id')->unique();
             
+            // Filter by variant if selected
+            if ($request->filled('variant')) {
+                $variantProductIds = Product::whereIn('id', $productIds)
+                    ->whereHas('standardPacking', function($q) use ($request) {
+                        $q->where('variant', $request->variant);
+                    })
+                    ->pluck('id');
+                $productIds = $variantProductIds;
+            }
+            
             $dist->stock_count = Product::whereIn('id', $productIds)
                 ->where('status', 'in_distributor')
                 ->count();
@@ -73,7 +101,7 @@ class ReportController extends Controller
             return Excel::download(new ReportsExport($distributors), 'sales-report-' . date('Y-m-d') . '.xlsx');
         }
         
-        return view('reports.index', compact('distributors', 'projects', 'chartData'));
+        return view('reports.index', compact('distributors', 'projects', 'chartData', 'variants'));
     }
     
     private function getChartData($projectIds, $request)
@@ -81,12 +109,25 @@ class ReportController extends Controller
         $startDate = $request->filled('start_date') ? $request->start_date : now()->subDays(30)->format('Y-m-d');
         $endDate = $request->filled('end_date') ? $request->end_date : now()->format('Y-m-d');
         
-        $sales = DB::table('products')
-            ->selectRaw('DATE(updated_at) as date, COUNT(*) as count')
-            ->where('status', 'sold')
-            ->whereIn('project_id', $projectIds)
-            ->whereBetween('updated_at', [$startDate, $endDate . ' 23:59:59'])
-            ->groupBy('date')
+        $query = DB::table('products')
+            ->selectRaw('DATE(products.updated_at) as date, COUNT(*) as count')
+            ->where('products.status', 'sold')
+            ->whereBetween('products.updated_at', [$startDate, $endDate . ' 23:59:59']);
+        
+        // Filter by project
+        if ($request->filled('project_id')) {
+            $query->where('products.project_id', $request->project_id);
+        } else {
+            $query->whereIn('products.project_id', $projectIds);
+        }
+        
+        // Filter by variant
+        if ($request->filled('variant')) {
+            $query->join('standard_packings', 'products.standard_packing_id', '=', 'standard_packings.id')
+                ->where('standard_packings.variant', $request->variant);
+        }
+        
+        $sales = $query->groupBy('date')
             ->orderBy('date')
             ->get();
         

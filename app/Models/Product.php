@@ -10,8 +10,8 @@ class Product extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['project_id', 'standard_packing_id', 'created_by', 'serial_number', 'variant', 'image_path', 'status', 'manufactured_at', 'warranty_expires_at', 'at_distributor', 'retail_stock', 'can_repair', 'repair_distributor_id', 'repair_notes', 'repair_sent_at'];
-    protected $casts = ['manufactured_at' => 'datetime', 'warranty_expires_at' => 'datetime', 'repair_sent_at' => 'datetime', 'can_repair' => 'boolean'];
+    protected $fillable = ['project_id', 'standard_packing_id', 'created_by', 'serial_number', 'variant', 'image_path', 'status', 'quality_checked', 'manufactured_at', 'warranty_expires_at', 'at_distributor', 'retail_stock', 'can_repair', 'repair_distributor_id', 'repair_notes', 'repair_sent_at'];
+    protected $casts = ['manufactured_at' => 'datetime', 'warranty_expires_at' => 'datetime', 'repair_sent_at' => 'datetime', 'can_repair' => 'boolean', 'quality_checked' => 'boolean'];
 
     protected static function boot()
     {

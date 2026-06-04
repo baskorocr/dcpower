@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Submit Warranty Claim</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Ajukan Klaim Garansi</h2>
     </x-slot>
 
     <div class="max-w-2xl mx-auto">
@@ -9,9 +9,9 @@
                 @csrf
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Product Serial Number *</label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nomor Seri Produk *</label>
                     <div class="flex gap-2">
-                        <input type="text" id="serial_number" name="serial_number" value="{{ old('serial_number') }}" required class="flex-1 px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Enter or scan serial number">
+                        <input type="text" id="serial_number" name="serial_number" value="{{ old('serial_number') }}" required class="flex-1 px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Masukkan atau scan nomor seri">
                         <button type="button" onclick="startScanner()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
@@ -31,7 +31,7 @@
                     <div id="scanner-container" class="hidden mt-4">
                         <div id="reader" class="border-2 border-emerald-200 rounded-lg overflow-hidden"></div>
                         <button type="button" onclick="stopScanner()" class="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                            Stop Scanner
+                            Hentikan Scanner
                         </button>
                     </div>
                 </div>
@@ -83,20 +83,20 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Complaint Type *</label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Jenis Keluhan *</label>
                     <select name="complaint_type" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
-                        <option value="">Select type</option>
-                        <option value="defect" {{ old('complaint_type') == 'defect' ? 'selected' : '' }}>Defect</option>
-                        <option value="damage" {{ old('complaint_type') == 'damage' ? 'selected' : '' }}>Damage</option>
-                        <option value="malfunction" {{ old('complaint_type') == 'malfunction' ? 'selected' : '' }}>Malfunction</option>
-                        <option value="other" {{ old('complaint_type') == 'other' ? 'selected' : '' }}>Other</option>
+                        <option value="">Pilih jenis</option>
+                        <option value="defect" {{ old('complaint_type') == 'defect' ? 'selected' : '' }}>Cacat Produk</option>
+                        <option value="damage" {{ old('complaint_type') == 'damage' ? 'selected' : '' }}>Rusak</option>
+                        <option value="malfunction" {{ old('complaint_type') == 'malfunction' ? 'selected' : '' }}>Tidak Berfungsi</option>
+                        <option value="other" {{ old('complaint_type') == 'other' ? 'selected' : '' }}>Lainnya</option>
                     </select>
                     @error('complaint_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description * (minimal 10 kata)</label>
-                    <textarea name="complaint_description" rows="4" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Describe the issue in detail...">{{ old('complaint_description') }}</textarea>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi * (minimal 10 kata)</label>
+                    <textarea name="complaint_description" rows="4" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Jelaskan masalahnya secara detail...">{{ old('complaint_description') }}</textarea>
                     @error('complaint_description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
@@ -161,27 +161,27 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Photo Seal *</label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Foto Seal *</label>
                     <input type="file" name="photo_evidence" accept="image/jpeg,image/jpg,image/png" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
-                    <p class="text-xs text-gray-500 mt-1">Upload clear photo of the seal (JPEG/PNG only, max 5MB, min 400x400px)</p>
+                    <p class="text-xs text-gray-500 mt-1">Upload foto seal yang jelas (JPEG/PNG, max 5MB, min 400x400px)</p>
                     @error('photo_evidence')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     <div id="preview" class="mt-2"></div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Photo Damage *</label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Foto Kerusakan *</label>
                     <input type="file" name="photo_damage" accept="image/jpeg,image/jpg,image/png" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
-                    <p class="text-xs text-gray-500 mt-1">Upload clear photo of the defect/damage (JPEG/PNG only, max 5MB, min 400x400px)</p>
+                    <p class="text-xs text-gray-500 mt-1">Upload foto kerusakan yang jelas (JPEG/PNG, max 5MB, min 400x400px)</p>
                     @error('photo_damage')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     <div id="preview_damage" class="mt-2"></div>
                 </div>
 
                 <div class="flex gap-2">
                     <button type="submit" class="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg hover:scale-105 transition-transform">
-                        Submit Claim
+                        Ajukan Klaim
                     </button>
                     <a href="{{ route('warranty-claims.index') }}" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600">
-                        Cancel
+                        Batal
                     </a>
                 </div>
             </form>
@@ -262,9 +262,9 @@
                             messageDiv.className = 'p-3 rounded-lg text-sm font-medium bg-green-100 text-green-800 border-2 border-green-300';
                             messageDiv.textContent = '✅ ' + data.message;
                             infoDiv.innerHTML = '<span class="font-semibold">Status: </span>' + data.product_status + '<br>' +
-                                '<span class="font-semibold">Product: </span>' + data.product.name + '<br>' +
-                                '<span class="font-semibold">Activated: </span>' + data.product.activated_at + '<br>' +
-                                '<span class="font-semibold">Expires: </span>' + data.product.expires_at;
+                                '<span class="font-semibold">Produk: </span>' + data.product.name + '<br>' +
+                                '<span class="font-semibold">Diaktivasi: </span>' + data.product.activated_at + '<br>' +
+                                '<span class="font-semibold">Kadaluarsa: </span>' + data.product.expires_at;
                             
                             // Auto-fill purchase date with activation date
                             const purchaseDateInput = document.querySelector('input[name="purchase_date"]');
@@ -341,7 +341,7 @@
                         }
                     ).catch(err => {
                         console.error(err);
-                        alert('Unable to start camera. Please enter serial number manually.');
+                        alert('Tidak dapat memulai kamera. Silakan masukkan nomor seri secara manual.');
                         stopScanner();
                     });
                 }

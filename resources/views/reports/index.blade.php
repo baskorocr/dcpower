@@ -14,13 +14,20 @@
     <div class="space-y-4">
         <!-- Filters -->
         <div class="p-4 bg-white dark:bg-dark-eval-1 rounded-2xl">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <form method="GET" id="filterForm" class="grid grid-cols-1 md:grid-cols-6 gap-3">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search distributor..." class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-dark-eval-2 text-sm">
                 
-                <select name="project_id" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-dark-eval-2 text-sm">
+                <select name="project_id" id="project_id" onchange="document.getElementById('filterForm').submit()" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-dark-eval-2 text-sm">
                     <option value="">All Projects</option>
                     @foreach($projects as $project)
                         <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
+                    @endforeach
+                </select>
+                
+                <select name="variant" class="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-dark-eval-2 text-sm">
+                    <option value="">All Variants</option>
+                    @foreach($variants as $variant)
+                        <option value="{{ $variant->variant }}" {{ request('variant') == $variant->variant ? 'selected' : '' }}>{{ $variant->variant }}</option>
                     @endforeach
                 </select>
                 

@@ -2,11 +2,6 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Standard Packing Details</h2>
-            @if(auth()->user()->hasAnyRole(['QA', 'admin']))
-            <a href="{{ route('standard-packings.print', $standardPacking) }}" target="_blank" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg">
-                Print Label
-            </a>
-            @endif
         </div>
     </x-slot>
 

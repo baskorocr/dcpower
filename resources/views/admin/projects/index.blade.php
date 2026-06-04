@@ -42,6 +42,9 @@
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <a href="{{ route('projects.show', $project) }}" class="text-emerald-600 hover:text-emerald-700">View</a>
+                                @can('manage-projects')
+                                <a href="{{ route('projects.edit', $project) }}" class="text-blue-600 hover:text-blue-700">Edit</a>
+                                @endcan
                                 @role('admin')
                                 <form action="{{ route('projects.destroy', $project) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
                                     @csrf

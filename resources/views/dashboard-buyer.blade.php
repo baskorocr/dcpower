@@ -1,23 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">My Dashboard</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard Saya</h2>
     </x-slot>
 
     <!-- Quick Actions -->
     <div class="mb-6 p-6 bg-white dark:bg-dark-eval-1 rounded-2xl shadow-lg">
-        <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100">Quick Actions</h3>
+        <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100">Aksi Cepat</h3>
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('warranty-claims.create') }}" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:scale-105 transition-transform flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                Submit Warranty Claim
+                Ajukan Klaim Garansi
             </a>
             <a href="{{ route('warranty-claims.index') }}" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:scale-105 transition-transform flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                 </svg>
-                View My Claims
+                Lihat Klaim Saya
             </a>
         </div>
     </div>
@@ -25,7 +25,7 @@
     <div class="grid grid-cols-1 gap-6">
         <!-- Recent Claims -->
         <div class="p-6 bg-white dark:bg-dark-eval-1 rounded-2xl shadow-lg">
-            <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100">Recent Claims</h3>
+            <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-gray-100">Klaim Terbaru</h3>
             <div class="space-y-3">
                 @forelse($recentClaims as $claim)
                 <div class="p-4 bg-gray-50 dark:bg-dark-eval-2 rounded-lg">
@@ -60,7 +60,7 @@
                     </div>
                 </div>
                 @empty
-                <p class="text-center text-gray-500 py-8">No claims submitted yet</p>
+                <p class="text-center text-gray-500 py-8">Belum ada klaim yang diajukan</p>
                 @endforelse
             </div>
         </div>

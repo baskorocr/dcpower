@@ -25,7 +25,7 @@
         <!-- Search & Filter -->
         <form method="GET" class="mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search serial number..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-1 dark:text-gray-200">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search serial number or packing code..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-1 dark:text-gray-200">
             </div>
             
             <div>
@@ -91,6 +91,7 @@
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Packing Code</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Project</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Quality</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Created</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Action</th>
                     </tr>
@@ -141,6 +142,17 @@
                                 @endif
                             </div>
                         </td>
+                        <td class="px-4 py-3 text-center">
+                            @if($product->quality_checked)
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">✓ Checked</span>
+                            @elseif(auth()->user()->hasRole('qa'))
+                            <button onclick="qualityCheck({{ $product->id }})" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-lg font-medium">
+                                Check
+                            </button>
+                            @else
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Not Checked</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                             {{ $product->created_at->format('d M Y H:i') }}
                         </td>
@@ -168,7 +180,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">No products found</td>
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">No products found</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -185,11 +197,9 @@
                     <button onclick="printSelected()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium">
                         Print Product Labels
                     </button>
-                    @if(auth()->user()->hasAnyRole(['QA', 'admin']))
-                    <button onclick="printSelectedPackings()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
+                    <button id="print-packing-btn" onclick="printSelectedPackings()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium hidden">
                         Print Packing Labels
                     </button>
-                    @endif
                     @if(!auth()->user()->hasRole(['distributor', 'buyer']))
                     <button onclick="deleteSelected()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">
                         Delete Selected
@@ -275,10 +285,14 @@
         selectAll.addEventListener('change', function() {
             checkboxes.forEach(cb => cb.checked = this.checked);
             updateBulkActions();
+            checkPackingQuality();
         });
 
         checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateBulkActions);
+            cb.addEventListener('change', function() {
+                updateBulkActions();
+                checkPackingQuality();
+            });
         });
 
         function updateBulkActions() {
@@ -461,6 +475,72 @@
                 console.error('Error:', error);
                 alert('An error occurred while updating repair status');
             }
+        }
+
+        // Quality Check Function
+        async function qualityCheck(productId) {
+            try {
+                const response = await fetch(`/products/${productId}/quality-check`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to check quality');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred');
+            }
+        }
+
+        // Check if all products in selected packings are quality checked
+        function checkPackingQuality() {
+            const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+            const packingIds = new Set();
+            
+            checkboxes.forEach(cb => {
+                packingIds.add(cb.dataset.packing);
+            });
+            
+            console.log('Packing IDs:', Array.from(packingIds));
+            
+            if (packingIds.size === 0) {
+                document.getElementById('print-packing-btn').classList.add('hidden');
+                return;
+            }
+            
+            // Check if all products in these packings are quality checked
+            fetch('/products/check-packing-quality', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    packing_ids: Array.from(packingIds)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                const printPackingBtn = document.getElementById('print-packing-btn');
+                if (data.all_checked && packingIds.size > 0) {
+                    printPackingBtn.classList.remove('hidden');
+                } else {
+                    printPackingBtn.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking packing quality:', error);
+            });
         }
     </script>
 </x-app-layout>

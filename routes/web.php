@@ -96,6 +96,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('products/print', [\App\Http\Controllers\Admin\ProductController::class, 'print'])->name('products.print');
         Route::post('products/bulk-delete', [\App\Http\Controllers\Admin\ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
         Route::post('products/{product}/repair-status', [\App\Http\Controllers\Admin\ProductController::class, 'updateRepairStatus'])->name('products.update-repair-status');
+        Route::post('products/{product}/quality-check', [\App\Http\Controllers\Admin\ProductController::class, 'qualityCheck'])->name('products.quality-check');
+        Route::post('products/check-packing-quality', [\App\Http\Controllers\Admin\ProductController::class, 'checkPackingQuality'])->name('products.check-packing-quality');
         Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     });
 

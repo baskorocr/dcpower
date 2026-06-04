@@ -32,9 +32,23 @@ class WarrantyClaimController extends Controller
             $query->where('status', $request->status);
         }
         
+        // Product filter
+        if ($request->filled('product')) {
+            $query->whereHas('product.standardPacking', function($q) use ($request) {
+                $q->where('variant', $request->product);
+            });
+        }
+        
         $claims = $query->latest()->paginate(20)->withQueryString();
         
-        return view('admin.warranty-claims.index', compact('claims'));
+        // Get products for filter (group by variant to avoid duplicates)
+        $products = \App\Models\StandardPacking::whereHas('products.warrantyClaims')
+            ->select('variant')
+            ->groupBy('variant')
+            ->orderBy('variant')
+            ->get();
+        
+        return view('admin.warranty-claims.index', compact('claims', 'products'));
     }
 
     public function create()

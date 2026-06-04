@@ -64,6 +64,7 @@ class ProjectController extends Controller
             'description' => 'nullable|string',
             'warranty_duration' => 'required|integer|min:1',
             'standard_packing_quantity' => 'nullable|integer|min:1',
+            'packing_format' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
 

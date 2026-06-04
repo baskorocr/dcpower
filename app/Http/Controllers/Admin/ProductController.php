@@ -39,7 +39,12 @@ class ProductController extends Controller
         
         // Search
         if ($request->filled('search')) {
-            $query->where('serial_number', 'like', '%' . $request->search . '%');
+            $query->where(function($q) use ($request) {
+                $q->where('serial_number', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('standardPacking', function($sq) use ($request) {
+                      $sq->where('packing_code', 'like', '%' . $request->search . '%');
+                  });
+            });
         }
         
         // Filter by status
@@ -446,6 +451,38 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Repair status updated successfully!'
+        ]);
+    }
+
+    public function qualityCheck(Request $request, Product $product)
+    {
+        $product->update(['quality_checked' => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product quality checked!',
+            'packing_code' => $product->standardPacking->packing_code ?? null,
+        ]);
+    }
+
+    public function checkPackingQuality(Request $request)
+    {
+        $packingIds = $request->packing_ids;
+        
+        if (empty($packingIds)) {
+            return response()->json(['all_checked' => false]);
+        }
+
+        // Get all products in these packings
+        $totalProducts = Product::whereIn('standard_packing_id', $packingIds)->count();
+        $checkedProducts = Product::whereIn('standard_packing_id', $packingIds)
+            ->where('quality_checked', true)
+            ->count();
+
+        return response()->json([
+            'all_checked' => $totalProducts > 0 && $totalProducts === $checkedProducts,
+            'total' => $totalProducts,
+            'checked' => $checkedProducts,
         ]);
     }
 }
