@@ -109,7 +109,7 @@
                 @csrf
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">Resolution Notes *</label>
-                    <textarea name="resolution_notes" rows="3" required class="w-full px-4 py-2 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="Enter approval notes..."></textarea>
+                    <textarea name="resolution_notes" rows="3" required class="w-full px-4 py-2 border-2 border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2 dark:border-gray-600 dark:text-gray-100" placeholder="Enter approval notes..."></textarea>
                 </div>
                 <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                     Approve Claim
@@ -120,7 +120,7 @@
                 @csrf
                 <div class="mb-4">
                     <label class="block text-sm font-semibold mb-2">Rejection Reason *</label>
-                    <textarea name="resolution_notes" rows="3" required class="w-full px-4 py-2 border-2 border-red-200 rounded-lg focus:ring-2 focus:ring-red-500" placeholder="Enter rejection reason..."></textarea>
+                    <textarea name="resolution_notes" rows="3" required class="w-full px-4 py-2 border-2 border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-dark-eval-2 dark:border-gray-600 dark:text-gray-100" placeholder="Enter rejection reason..."></textarea>
                 </div>
                 <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                     Reject Claim

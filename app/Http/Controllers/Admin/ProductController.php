@@ -291,13 +291,10 @@ class ProductController extends Controller
     {
         $format = $project->packing_format ?? 'PACK-{RANDOM}';
         
-        // Get next batch number for this project and variant
-        $lastPacking = StandardPacking::where('project_id', $project->id)
+        // Get next batch number based on count of existing packings for this project+variant
+        $batchNumber = StandardPacking::where('project_id', $project->id)
             ->when($variant, fn($q) => $q->where('variant', $variant))
-            ->latest('id')
-            ->first();
-        
-        $batchNumber = $lastPacking ? (intval(substr($lastPacking->packing_code, -5)) + 1) : 1;
+            ->count() + 1;
         
         // Replace placeholders
         $code = str_replace('{PROJECT_NAME}', strtoupper($project->name), $format);

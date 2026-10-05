@@ -168,44 +168,6 @@
         @endif
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 gap-5 mb-6 sm:grid-cols-2 lg:grid-cols-2">
-        <!-- Active Sessions -->
-        <div class="relative overflow-hidden p-6 bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 rounded-2xl border-2 border-teal-200 dark:border-teal-700">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider">{{ __('System Status') }}</p>
-                    <p class="mt-3 text-2xl font-black text-teal-900 dark:text-teal-100">{{ __('All Systems Operational') }}</p>
-                    <p class="mt-3 text-xs font-bold text-teal-600 dark:text-teal-400">
-                        ✓ {{ __('Running smoothly') }}
-                    </p>
-                </div>
-                <div class="p-3 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-xl shadow-lg">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Welcome Message -->
-    <div class="relative overflow-hidden p-8 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl shadow-lg">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
-        <div class="relative flex items-center justify-between">
-            <div>
-                <h3 class="text-2xl font-black text-white mb-2">{{ __('Welcome to DC Power Warranty System!') }} 🌿</h3>
-                <p class="text-emerald-50 font-medium">{{ __('Everything is running smoothly. You\'re all set to manage your warranty claims.') }}</p>
-            </div>
-            <div class="hidden md:block">
-                <svg class="w-20 h-20 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-        </div>
-    </div>
-
     <!-- Distributor Stock Modal -->
     <div id="distributorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-eval-1 rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
