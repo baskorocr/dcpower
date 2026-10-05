@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserSurvey;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,12 +34,22 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'survey_q1' => ['required', 'string'],
+            'survey_q2' => ['required', 'string'],
+            'survey_q3' => ['required', 'string'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+        ]);
+
+        UserSurvey::create([
+            'user_id' => $user->id,
+            'q1_riding_experience' => $request->survey_q1,
+            'q2_battery_lifespan' => $request->survey_q2,
+            'q3_replacement_reason' => $request->survey_q3,
         ]);
 
         // Assign buyer role by default

@@ -71,6 +71,18 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tipe Motor *</label>
+                    <input type="text" name="motor_type" value="{{ old('motor_type') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: Honda Beat, Yamaha Mio, dll">
+                    @error('motor_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tahun Motor *</label>
+                    <input type="number" name="motor_year" value="{{ old('motor_year') }}" required min="1900" max="{{ date('Y') }}" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: 2020">
+                    @error('motor_year')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Pembelian *</label>
                     <input type="date" name="purchase_date" value="{{ old('purchase_date') }}" max="{{ date('Y-m-d') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
                     @error('purchase_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -82,34 +94,46 @@
                     @error('battery_issue_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
-                <div>
+                <div x-data="{ complaintType: '{{ old('complaint_type', '') }}', complaintDetail: '{{ old('complaint_detail', '') }}' }">
                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Jenis Keluhan *</label>
-                    <select name="complaint_type" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                    <select name="complaint_type" required x-model="complaintType" @change="complaintDetail = ''" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
                         <option value="">Pilih jenis</option>
                         <option value="defect" {{ old('complaint_type') == 'defect' ? 'selected' : '' }}>Cacat Produk</option>
                         <option value="damage" {{ old('complaint_type') == 'damage' ? 'selected' : '' }}>Rusak</option>
-                        <option value="malfunction" {{ old('complaint_type') == 'malfunction' ? 'selected' : '' }}>Tidak Berfungsi</option>
                         <option value="other" {{ old('complaint_type') == 'other' ? 'selected' : '' }}>Lainnya</option>
                     </select>
                     @error('complaint_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi * (minimal 10 kata)</label>
-                    <textarea name="complaint_description" rows="4" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Jelaskan masalahnya secara detail...">{{ old('complaint_description') }}</textarea>
-                    @error('complaint_description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                </div>
+                    <!-- Sub-pilihan: Cacat Produk -->
+                    <div x-show="complaintType === 'defect'" x-transition class="mt-3">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Detail Cacat Produk *</label>
+                        <select name="complaint_detail" x-model="complaintDetail" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                            <option value="">Pilih detail</option>
+                            <option value="cacat_konstruksi" {{ old('complaint_detail') == 'cacat_konstruksi' ? 'selected' : '' }}>Cacat Konstruksi Mekanikal &amp; Kemasan</option>
+                            <option value="tidak_ada_segel" {{ old('complaint_detail') == 'tidak_ada_segel' ? 'selected' : '' }}>Tidak ada segel produksi</option>
+                            <option value="resistansi_tinggi" {{ old('complaint_detail') == 'resistansi_tinggi' ? 'selected' : '' }}>Resistansi Dalam Sangat Tinggi</option>
+                        </select>
+                        @error('complaint_detail')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tipe Motor *</label>
-                    <input type="text" name="motor_type" value="{{ old('motor_type') }}" required class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: Honda Beat, Yamaha Mio, dll">
-                    @error('motor_type')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-                </div>
+                    <!-- Sub-pilihan: Rusak -->
+                    <div x-show="complaintType === 'damage'" x-transition class="mt-3">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Detail Kerusakan *</label>
+                        <select name="complaint_detail" x-model="complaintDetail" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2">
+                            <option value="">Pilih detail</option>
+                            <option value="tegangan_sel_turun" {{ old('complaint_detail') == 'tegangan_sel_turun' ? 'selected' : '' }}>Tegangan sel turun di bawah ambang batas aman</option>
+                            <option value="suhu_panas_tinggi" {{ old('complaint_detail') == 'suhu_panas_tinggi' ? 'selected' : '' }}>Suhu Panas Tinggi</option>
+                            <option value="tidak_berfungsi" {{ old('complaint_detail') == 'tidak_berfungsi' ? 'selected' : '' }}>Tidak Berfungsi</option>
+                        </select>
+                        @error('complaint_detail')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tahun Motor *</label>
-                    <input type="number" name="motor_year" value="{{ old('motor_year') }}" required min="1900" max="{{ date('Y') }}" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Contoh: 2020">
-                    @error('motor_year')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    <!-- Deskripsi: Lainnya -->
+                    <div x-show="complaintType === 'other'" x-transition class="mt-3">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi (minimal 10 kata)</label>
+                        <textarea name="complaint_description" rows="4" class="w-full px-4 py-2 border-2 border-emerald-200 dark:border-emerald-700 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-dark-eval-2" placeholder="Jelaskan masalahnya secara detail...">{{ old('complaint_description') }}</textarea>
+                        @error('complaint_description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
                 </div>
 
                 <div>

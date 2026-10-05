@@ -27,6 +27,12 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">Complaint Type</p>
                     <p class="font-semibold">{{ ucfirst($warrantyClaim->complaint_type) }}</p>
                 </div>
+                @if($warrantyClaim->complaint_detail)
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Detail Keluhan</p>
+                    <p class="font-semibold">{{ ucfirst(str_replace('_', ' ', $warrantyClaim->complaint_detail)) }}</p>
+                </div>
+                @endif
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Product Serial Number</p>
                     <p class="font-semibold">{{ $warrantyClaim->product->serial_number }}</p>
@@ -86,19 +92,35 @@
                     <p class="font-semibold">{{ $warrantyClaim->motor_type }}</p>
                 </div>
                 <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Tahun Motor</p>
+                    <p class="font-semibold">{{ $warrantyClaim->motor_year }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Alamat</p>
+                    <p class="font-semibold">{{ $warrantyClaim->address }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Kota</p>
+                    <p class="font-semibold">{{ $warrantyClaim->city }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Provinsi</p>
+                    <p class="font-semibold">{{ $warrantyClaim->province }}</p>
+                </div>
+                <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Pernah Modifikasi?</p>
                     <p class="font-semibold">{{ $warrantyClaim->has_modification ? 'Ya' : 'Tidak' }}</p>
                 </div>
-                @if($warrantyClaim->has_modification && $warrantyClaim->modification_types)
-                <div class="col-span-1 md:col-span-2">
+                @if($warrantyClaim->has_modification && $warrantyClaim->modification_type)
+                <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Jenis Modifikasi</p>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                        @foreach($warrantyClaim->modification_types as $mod)
-                        <span class="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-full">
-                            {{ ucfirst(str_replace('_', ' ', $mod)) }}
-                        </span>
-                        @endforeach
-                    </div>
+                    <p class="font-semibold">{{ ucfirst(str_replace('_', ' ', $warrantyClaim->modification_type)) }}</p>
+                </div>
+                @endif
+                @if($warrantyClaim->modification_other)
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Modifikasi Lainnya</p>
+                    <p class="font-semibold">{{ $warrantyClaim->modification_other }}</p>
                 </div>
                 @endif
                 <div>
@@ -111,10 +133,12 @@
                 </div>
             </div>
 
+            @if($warrantyClaim->complaint_description)
             <div class="mb-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Complaint Description</p>
                 <p class="p-3 bg-gray-50 dark:bg-dark-eval-2 rounded-lg">{{ $warrantyClaim->complaint_description }}</p>
             </div>
+            @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 @if($warrantyClaim->photo_evidence)

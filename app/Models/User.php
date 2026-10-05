@@ -22,6 +22,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function survey()
+    {
+        return $this->hasOne(UserSurvey::class);
+    }
+
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'project_users');

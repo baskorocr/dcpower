@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WarrantyClaim;
 use App\Models\Sale;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class WarrantyClaimController extends Controller
 {
@@ -126,9 +127,13 @@ class WarrantyClaimController extends Controller
     {
         $validated = $request->validate([
             'serial_number' => 'required|string',
-            'complaint_type' => 'required|in:defect,damage,malfunction,other',
-            'complaint_description' => ['required', 'string', function ($attribute, $value, $fail) {
-                if (str_word_count($value) < 10) {
+            'complaint_type' => 'required|in:defect,damage,other',
+            'complaint_detail' => 'nullable|required_if:complaint_type,defect|required_if:complaint_type,damage|string',
+            'complaint_description' => ['nullable', 'string', function ($attribute, $value, $fail) use ($request) {
+                if ($request->complaint_type === 'other' && empty($value)) {
+                    $fail('Deskripsi wajib diisi jika memilih Lainnya.');
+                }
+                if (!empty($value) && str_word_count($value) < 10) {
                     $fail('Deskripsi harus minimal 10 kata.');
                 }
             }],
@@ -161,34 +166,14 @@ class WarrantyClaimController extends Controller
 
         // Upload photo seal
         if ($request->hasFile('photo_evidence')) {
-            $file = $request->file('photo_evidence');
-            
-            $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
-            if (!in_array($file->getMimeType(), $allowedMimes)) {
-                return back()->withErrors(['photo_evidence' => 'Invalid file type. Only JPEG and PNG images are allowed.']);
-            }
-            
-            if (!@getimagesize($file->getRealPath())) {
-                return back()->withErrors(['photo_evidence' => 'File is not a valid image.']);
-            }
-            
-            $photoPath = $file->store('warranty-claims', 'public');
+            $photoPath = $this->validateAndStoreImage($request->file('photo_evidence'), 'photo_evidence');
+            if ($photoPath instanceof \Illuminate\Http\RedirectResponse) return $photoPath;
         }
 
         // Upload photo damage
         if ($request->hasFile('photo_damage')) {
-            $file = $request->file('photo_damage');
-            
-            $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
-            if (!in_array($file->getMimeType(), $allowedMimes)) {
-                return back()->withErrors(['photo_damage' => 'Invalid file type. Only JPEG and PNG images are allowed.']);
-            }
-            
-            if (!@getimagesize($file->getRealPath())) {
-                return back()->withErrors(['photo_damage' => 'File is not a valid image.']);
-            }
-            
-            $photoDamagePath = $file->store('warranty-claims', 'public');
+            $photoDamagePath = $this->validateAndStoreImage($request->file('photo_damage'), 'photo_damage');
+            if ($photoDamagePath instanceof \Illuminate\Http\RedirectResponse) return $photoDamagePath;
         }
 
         $modificationType = $validated['has_modification'] ? ($validated['modification_type'] ?? null) : null;
@@ -197,7 +182,8 @@ class WarrantyClaimController extends Controller
         $claim = WarrantyClaim::create([
             'product_id' => $product->id,
             'complaint_type' => $validated['complaint_type'],
-            'complaint_description' => $validated['complaint_description'],
+            'complaint_detail' => $validated['complaint_detail'] ?? null,
+            'complaint_description' => $validated['complaint_description'] ?? null,
             'claimed_by_user_id' => auth()->id(),
             'photo_evidence' => $photoPath ?? null,
             'photo_damage' => $photoDamagePath ?? null,
@@ -279,5 +265,39 @@ class WarrantyClaimController extends Controller
         $warrantyClaim->delete();
 
         return redirect()->route('dashboard')->with('success', 'Pengajuan klaim berhasil dibatalkan');
+    }
+
+    private function validateAndStoreImage($file, string $field): string|\Illuminate\Http\RedirectResponse
+    {
+        // 1. Check magic bytes — tidak bisa di-spoof
+        $handle = fopen($file->getRealPath(), 'rb');
+        $magic  = fread($handle, 12);
+        fclose($handle);
+
+        $isJpeg = str_starts_with($magic, "\xFF\xD8\xFF");
+        $isPng  = str_starts_with($magic, "\x89PNG\r\n\x1a\n");
+
+        if (!$isJpeg && !$isPng) {
+            return back()->withErrors([$field => 'File harus berupa gambar JPEG atau PNG yang valid.'])->withInput();
+        }
+
+        // 2. Verifikasi dengan GD — pastikan bisa dibaca sebagai gambar
+        $imageInfo = @getimagesize($file->getRealPath());
+        if (!$imageInfo || !in_array($imageInfo[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG])) {
+            return back()->withErrors([$field => 'File bukan gambar yang valid.'])->withInput();
+        }
+
+        // 3. Cek dimensi minimum
+        if ($imageInfo[0] < 400 || $imageInfo[1] < 400) {
+            return back()->withErrors([$field => 'Ukuran gambar minimal 400x400 piksel.'])->withInput();
+        }
+
+        // 4. Simpan dengan nama acak + ekstensi aman (bukan dari nama asli file)
+        $ext      = $isJpeg ? 'jpg' : 'png';
+        $filename = 'warranty-claims/' . \Str::uuid() . '.' . $ext;
+
+        \Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+
+        return $filename;
     }
 }

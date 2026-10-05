@@ -16,6 +16,7 @@ class WarrantyClaim extends Model
         'claim_number', 
         'status', 
         'complaint_type', 
+        'complaint_detail',
         'complaint_description', 
         'photo_evidence',
         'photo_damage', 
